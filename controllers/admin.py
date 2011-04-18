@@ -8,6 +8,11 @@ def index():
 
 
 @auth_user.requires_role('SysAdmin')
+def system():
+    return dict()
+
+
+@auth_user.requires_role('SysAdmin')
 def users():
     view_options =  None
     users = db(db.auth_users.auth_role_id==db.auth_roles.id).select(
