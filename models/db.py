@@ -18,7 +18,7 @@ if request.env.web2py_runtime_gae:            # if running on Google App Engine
     # session.connect(request, response, db=MEMDB(Client())
 else:                                         # else use a normal relational database
     #db = DAL('sqlite://storage.sqlite')       # if not, use SQLite or other DB
-    db = DAL('mysql://web2py:py2web@localhost:3306/qastack')
+    db = DAL('mysql://web2py:py2web@ds9.virtual:3306/qastack')
 ## if no need for session
 # session.forget()
 
@@ -200,7 +200,7 @@ db.define_table('subscriptions_notification',
 
 # "Queue" messages sent to the administrators (All admins can view )
 db.define_table('admin_messages',
-    Field('auth_user', 'string', length=255, required=True),
+    Field('auth_user_id', db.auth_users),
     Field('subject', 'string', length=255, required=True),
     Field('message', 'text', required=True),
     Field('creation_date', 'datetime', required=True),

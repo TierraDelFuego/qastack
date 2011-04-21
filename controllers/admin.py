@@ -3,13 +3,52 @@
 
 @auth_user.requires_role('SysAdmin')
 def index():
-    admin_messages = None
-    return dict(admin_messages=admin_messages)
+    req = request.vars # /admin/function?tag=value
+    # view_type possible values = (nothing) --> default to "unread"
+    # "read" and "all"
+    read_modifier = None
+    view_type = req.get('view_type', 'unread')
+    #raise ValueError(view_type)
+    if view_type == 'unread':
+        read_modifier = False
+    elif view_type == 'read':
+        read_modifier == True
+    msgs = db.admin_messages.message[:40]
+    if read_modifier is not None:
+        # I will need an inner join on a left join, please read
+        # http://groups.google.com/group/web2py/browse_thread/thread/
+        # d7f5e5820176813/d418ba81180fe40a?lnk=gst&q=multiple+left+
+        # joins#d418ba81180fe40a
+        # For more info on why I wil need to make a second pass on the
+        # generated resultset, not a biggie, a bit annoying though.
+        messages = db(db.admin_messages.read_flag==read_modifier).select(
+            db.admin_messages.id,
+            db.admin_messages.auth_user_id,
+            db.admin_messages.subject,
+            msgs,
+            db.admin_messages.creation_date,
+            db.admin_messages.read_flag,
+            orderby=~db.admin_messages.creation_date
+        )
+        #raise ValueError(messages)
+    else:
+        messages = db().select(
+            db.admin_messages.id,
+            db.admin_messages.auth_user_id,
+            db.admin_messages.subject,
+            msgs,
+            db.admin_messages.creation_date,
+            db.admin_messages.read_flag,
+            orderby=~db.admin_messages.creation_date
+        )
+    return dict(messages=messages)
 
 
 @auth_user.requires_role('SysAdmin')
 def system():
-    return dict()
+    # Get the main content for the right nav, so it can be changed quickly
+    sys_properties = db().select(db.system_properties.ALL)
+    return dict(sys_properties=sys_properties)
 
 
 @auth_user.requires_role('SysAdmin')

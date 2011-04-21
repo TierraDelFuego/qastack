@@ -10,4 +10,29 @@
 
 <h2 class="fancy">System Administration</h2>
 
+{{for prop in sys_properties:}}
+    {{if prop.property_name == 's_info_html':}}
+        <p>{{=prop.property_desc}}:</p>
+        <div class="paragraph-big"
+            <textarea id="{{=prop.property_name}}"
+                      name="{{=prop.property_name}}"
+                      style="width:90%;height:130px;"
+                      cols="0"
+                      rows="0">{{=prop.property_value}}</textarea>
+        </div>
+        {{break}}
+    {{pass}}
+{{pass}}
 
+{{for prop in sys_properties:}}
+    {{if prop.property_name != 's_info_html':}}
+        <p>{{=prop.property_desc}}:</p>
+        <div class="paragraph-big"
+            <input type="text"
+                   id="{{=prop.property_name}}"
+                   name="{{=prop.property_name}}"
+                   style="width:50%;"
+                   value="{{=prop.property_value}}" />
+        </div>
+    {{pass}}
+{{pass}}

@@ -10,6 +10,48 @@
 
 <h2 class="fancy">Administrative Messages</h2>
 
-{{if admin_messages is not None:}}
-    {{=admin_messages}}
+{{if messages is not None:}}
+
+    <form id="messages_form" method="post" action="">
+        <fieldset id="messages_form_fields">
+            <input type="hidden" id="form_submitted" name="form_submitted" value="1" />
+            
+            <div class="paragraph">
+                Vie Messages 
+                <select id="view_type" name="view_type" onchange="this.form.submit();">
+                    <option value="unread"
+                        {{if request.vars.get('view_type', '') == '':}}selected="selected"{{pass}}>Unread</option>
+                    <option value="read"
+                        {{if request.vars.get('view_type', '') == 'read':}}selected="selected"{{pass}}>Read</option>
+                    <option value="all"
+                        {{if request.vars.get('view_type', '') == 'all':}}selected="selected"{{pass}}>All</option>
+                </select>
+            </div>
+            
+            <table cellspacing="0" cellpadding="0" class="ftable">
+                <thead>
+                    <tr class="shadedarker">
+                        <th>&nbsp;</th>
+                        <th style="text-align:left;">From</th>
+                        <th style="text-align:left;">Subject</th>
+                        <th>Message Preview</th>
+                        <th>Submitted</th>
+                        <th>Read</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{for idx, message in enumerate(messages):}}
+                        <tr class="{{if idx%2:}}shadedark{{else:}}shadelight{{pass}}">
+                            <td>&nbsp;</td>
+                            <td>&nbsp;</td>
+                            <td><a href="{{=URL(r=request, c='admin', f='view_admin_message', args=[message.admin_messages.id])}}" title="View this message">{{=message.admin_messages.subject}}</a></td>
+                            <td>{{=message._extra.values()[0]}}</td>
+                            <td style="text-align:center;">{{=message.admin_messages.creation_date}}</td>
+                            <td style="text-align:center;">{{if message.admin_messages.read_flag:}}<b class="info">Yes</b>{{else:}}<b class="error">No</b>{{pass}}</td>
+                        </tr>
+                    {{pass}}
+                </tbody>
+            </table>
+        </fieldset>
+    </form>
 {{pass}}
