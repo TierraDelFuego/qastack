@@ -42,6 +42,7 @@
 				<a title="{{=XML(T('Member Preferences'))}}" href="{{=URL(r=request, c='members', f='preferences')}}">{{=XML(T('Preferences'))}}</a> |
 				<a title="{{=XML(T('Logout'))}}" href="{{=URL(r=request, c='members', f='logout')}}">{{=XML(T('Logout'))}}</a> |
 			{{else:}}
+                <a title="{{=XML(T('Ask a Question'))}}" href="{{=URL(r=request, c='members', f='login', vars=dict(ask='yes'))}}">Ask a Question</a> |
 				<a title="{{=XML(T('Log In/Registering'))}}" href="{{=URL(r=request, c='members', f='login')}}">Login/Register</a> |
 			{{pass}}
 			<a title="{{=XML(T('about'))}}" href="{{=URL(r=request, c='default', f='about')}}">{{=XML(T('About'))}}</a> |
@@ -74,7 +75,8 @@
 
 <div id="footer">
 	<p>QA-Stack is Open Source distributed under the Simplified BSD License -
-	Version <b>Beta</b> 0.0 Release 4</p>
+	Version <b>Beta</b> Release 5 | <a href="{{=URL(r=request, c='default', f='contact_admin')}}"
+	title="{{=XML(T('Contact Administrator'))}}">{{=XML(T('Contact Administrator'))}}</a></p>
 </div>
 
 </body>

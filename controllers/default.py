@@ -11,6 +11,7 @@
 import datetime
 import hashlib
 import base64
+
 from gluon.contrib.login_methods.email_auth import email_auth
 
 
@@ -360,3 +361,39 @@ def call():
     """
     session.forget()
     return service()
+
+
+def contact_admin():
+    """ Contact Admin - This can allow anonymous users to post spam,
+    so for them, I'll add some "poor man's captcha" """
+    view_info = {}
+    view_info['errors'] = []
+    captcha = stackhelper.gen_pwd()
+    view_info['anon_captcha'] = captcha
+    view_info['anon_captcha_base64'] = base64.standard_b64encode(captcha)
+    req = request.vars
+    if req.form_submitted:
+        if req.send_b:
+            if req.subject and req.message:
+                if auth_user.is_auth() or\
+                (not auth_user.is_auth() and\
+                 base64.standard_b64encode(req.captcha_response) == req.c):
+                    db.admin_messages.insert(
+                        auth_user_id=auth_user.get_user_id(),
+                        subject=parse_content(req.subject),
+                        message=parse_content(req.message),
+                        creation_date=request.now,
+                        read_flag=False)
+                    redirect(URL(r=request, c='default', f='index'))
+                else:
+                    view_info['errors'].append(
+                        'Invalid humanity challenge response, please try again')
+                    return dict(request=request, view_info=view_info)
+            else:
+                view_info['errors'].append(
+                    'Both Subject and Message are required fields')
+                return dict(request=request, view_info=view_info)
+        else:
+            redirect(URL(r=request, c='default', f='index'))
+    else:
+        return dict(request=request, view_info=view_info)

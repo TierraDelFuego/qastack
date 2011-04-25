@@ -1,5 +1,9 @@
 {{extend 'qastack_layout.html'}}
 
+{{if request.vars.get('ask'):}}
+    <div class="note">You must log in before you can post your question.</div>
+{{pass}}
+
 <h2 class="fancy">{{=XML(T('Login'))}}</h2>
 
 {{if custom_messages['errors']:}}
@@ -22,6 +26,7 @@
 <form id="login" method="post" action="">
     <fieldset id="login_form_fields">
         <input type="hidden" id="form_submitted" name="form_submitted" value="1" />
+        <input type="hidden" id="ask" name="ask" value="{{='0' if request.vars.get('ask') is None else '1'}}" />
         <div class="paragraph">
             <b>{{=XML(T('New Users'))}}:</b>
             <a href="{{=URL(r=request, c='members', f='signup')}}" title="{{=XML(T('Create a New LOCAL Account Here'))}}" class="bold">{{=XML(T('Create a New LOCAL Account Here'))}}</a>
@@ -71,6 +76,12 @@
 
     </fieldset>
 </form>
+
+<script type="text/javascript">
+    <!--
+    document.getElementById("auth_alias").focus();
+    //-->
+</script>
 
 <!-- Make sure your token_url corresponds to a valid hostname defined in your janrain settings //-->
 <iframe src="http://qa-stack.rpxnow.com/openid/embed?token_url={{=request.env.wsgi_url_scheme}}://{{=request.env.http_host}}{{=URL(r=request, c='members', f='login_janrain')}}"

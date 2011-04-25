@@ -10,23 +10,28 @@
 
 <h2 class="fancy">Administrative Messages</h2>
 
-{{if messages is not None:}}
-
-    <form id="messages_form" method="post" action="">
-        <fieldset id="messages_form_fields">
-            <input type="hidden" id="form_submitted" name="form_submitted" value="1" />
-            
-            <div class="paragraph">
-                Vie Messages 
-                <select id="view_type" name="view_type" onchange="this.form.submit();">
-                    <option value="unread"
-                        {{if request.vars.get('view_type', '') == '':}}selected="selected"{{pass}}>Unread</option>
-                    <option value="read"
-                        {{if request.vars.get('view_type', '') == 'read':}}selected="selected"{{pass}}>Read</option>
-                    <option value="all"
-                        {{if request.vars.get('view_type', '') == 'all':}}selected="selected"{{pass}}>All</option>
-                </select>
-            </div>
+<form id="messages_form" method="post" action="">
+    <fieldset id="messages_form_fields">
+        <input type="hidden" id="form_submitted" name="form_submitted" value="1" />
+        
+        <div class="paragraph">
+            Vie Messages 
+            <select id="view_type" name="view_type" onchange="this.form.submit();">
+                <option value="unread"
+                    {{if request.vars.get('view_type', '') == '':}}selected="selected"{{pass}}>Unread</option>
+                <option value="read"
+                    {{if request.vars.get('view_type', '') == 'read':}}selected="selected"{{pass}}>Read</option>
+                <option value="all"
+                    {{if request.vars.get('view_type', '') == 'all':}}selected="selected"{{pass}}>All</option>
+            </select>
+        </div>
+        
+        {{if not messages:}}
+            <p class="info">No Messages Found.</p>
+        {{else:}}
+        
+            <div class="paragraph"><input type="submit" id="submit1" name="remove1" value="Remove Selected Messages"
+            onclick="return confirm('Please confirm you wish to delete the selected messages.\n\nThs operation cannot be undone.');" /></div>
             
             <table cellspacing="0" cellpadding="0" class="ftable">
                 <thead>
@@ -42,9 +47,21 @@
                 <tbody>
                     {{for idx, message in enumerate(messages):}}
                         <tr class="{{if idx%2:}}shadedark{{else:}}shadelight{{pass}}">
-                            <td>&nbsp;</td>
-                            <td>&nbsp;</td>
-                            <td><a href="{{=URL(r=request, c='admin', f='view_admin_message', args=[message.admin_messages.id])}}" title="View this message">{{=message.admin_messages.subject}}</a></td>
+                            <td><input type="checkbox" id="msg_ids" name="msg_ids"
+                            value="{{=message.admin_messages.id}}" /></td>
+                            <td>
+                                {{if message.admin_messages.auth_user_id is None:}}
+                                    Anonymous
+                                {{else:}}
+                                    <a title="Edit this User"
+                                        href="{{=URL(r=request, c='admin', f='edit_user', args=[3])}}"
+                                        >{{=stackhelper.get_member_property('m_display_name', message.admin_messages.auth_user_id, 'Unknown User')}}</a>
+                                {{pass}}
+                            </td>
+                            <td>
+                                <a href="{{=URL(r=request, c='admin', f='view_admin_message', args=[message.admin_messages.id])}}"
+                                onclick="window.open(this.href);return false;"
+                                title="View this message">{{=message.admin_messages.subject}}</a></td>
                             <td>{{=message._extra.values()[0]}}</td>
                             <td style="text-align:center;">{{=message.admin_messages.creation_date}}</td>
                             <td style="text-align:center;">{{if message.admin_messages.read_flag:}}<b class="info">Yes</b>{{else:}}<b class="error">No</b>{{pass}}</td>
@@ -52,6 +69,11 @@
                     {{pass}}
                 </tbody>
             </table>
-        </fieldset>
-    </form>
-{{pass}}
+            
+            <div class="paragraph-all"><input type="submit" id="submit2" name="remove2"
+            value="Remove Selected Messages"
+            onclick="return confirm('Please confirm you wish to delete the selected messages.\n\nThs operation cannot be undone.');" /></div>
+            
+        {{pass}}
+    </fieldset>
+</form>

@@ -387,6 +387,10 @@
     {{if request.vars.get('anchor', '') != '':}}
     window.location.hash = '{{=request.vars['anchor']}}';
     {{pass}}
+    
+    // Highlight the "Questions" tab
+    document.getElementById('aquestions').className = 'active';
+</script>
 //-->
 </script>
 

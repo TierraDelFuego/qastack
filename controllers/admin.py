@@ -6,14 +6,27 @@ def index():
     req = request.vars # /admin/function?tag=value
     # view_type possible values = (nothing) --> default to "unread"
     # "read" and "all"
+    # read_modifier is a variable that controls the "read" or "unread" state
+    # of the data to be pulled from the "admin_messages" table
     read_modifier = None
     view_type = req.get('view_type', 'unread')
-    #raise ValueError(view_type)
     if view_type == 'unread':
         read_modifier = False
     elif view_type == 'read':
-        read_modifier == True
+        read_modifier = True
+    # Nasty-truncate for preview purposes
     msgs = db.admin_messages.message[:40]
+    
+    # Here, if deletiojn of messages was requested, carry out the request...
+    form_submitted = req.form_submitted
+    msg_ids = req.msg_ids
+    if msg_ids is not None:
+        if not type(msg_ids) is list:
+            msg_ids = [msg_ids]
+        db(db.admin_messages.id.belongs(msg_ids)).delete()
+    
+    # First condition triggers if the admin user does pick a "modifier"
+    # meaning that he elected, "show me the read" or "show me the unread" msgs
     if read_modifier is not None:
         # I will need an inner join on a left join, please read
         # http://groups.google.com/group/web2py/browse_thread/thread/
@@ -30,8 +43,9 @@ def index():
             db.admin_messages.read_flag,
             orderby=~db.admin_messages.creation_date
         )
-        #raise ValueError(messages)
     else:
+        # Second condition is if the admin user wants to see both read and
+        # unread admin messages...
         messages = db().select(
             db.admin_messages.id,
             db.admin_messages.auth_user_id,
@@ -46,9 +60,17 @@ def index():
 
 @auth_user.requires_role('SysAdmin')
 def system():
-    # Get the main content for the right nav, so it can be changed quickly
-    sys_properties = db().select(db.system_properties.ALL)
-    return dict(sys_properties=sys_properties)
+    req = request.vars
+    if req.form_submitted:
+        #raise ValueError(req.property_names)
+        # Save Changes Requested
+        for p_name in req.property_names:
+            db(db.system_properties.property_name==p_name).update(
+                property_value=req.get(p_name, ''))
+        redirect(URL(r=request, c='admin', f='system', vars=dict(saved=1)))
+    else:
+        sys_properties = db().select(db.system_properties.ALL)
+        return dict(sys_properties=sys_properties)
 
 
 @auth_user.requires_role('SysAdmin')
@@ -257,3 +279,12 @@ def edit_user():
                     user_id=user_id,
                     roles=roles,
                     question_subscriptions=question_subscriptions)
+
+
+@auth_user.requires_role('SysAdmin')
+def view_admin_message():
+    message = db(db.admin_messages.id==request.args[0]).select(
+        db.admin_messages.ALL)[0]
+    # In addition, update this message's status to "read"
+    db(db.admin_messages.id==request.args[0]).update(read_flag=True)
+    return dict(message=message)
