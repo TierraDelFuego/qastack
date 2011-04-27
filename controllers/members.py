@@ -112,7 +112,8 @@ def login():
                     # Google authentication was correct, auhenticate_google()
                     # Will simply return "True" if the (already authenticated)
                     # user had an account already in QA-Stack, or False if
-                    # qa-stack had to create the record entry for the first time
+                    # qa-stack had to create the record entry for the
+                    # first time
                     auth_user.authenticate_google(req.auth_alias, req.passwd)
                     isauth = True
                 else:
@@ -191,7 +192,7 @@ def login_janrain():
             name,
             email,
             profile_pic_url)
-        vars={}
+        form_vars = {}
 
         # Now, update some properties
         stackhelper.put_member_property('m_last_login', user_id, request.now)
@@ -204,8 +205,8 @@ def login_janrain():
     else:
         # TODO: Do something more elegant than this
         #raise ValueError('An error occured: %s' % (auth_info['err']['msg']))
-        vars = dict(login_error=auth_info['err']['msg'])
-    redirect(URL(r=request, c='default', f='index', vars=vars))
+        form_vars = dict(login_error=auth_info['err']['msg'])
+    redirect(URL(r=request, c='default', f='index', vars=form_vars))
 
 
 @auth_user.requires_login()
@@ -358,7 +359,11 @@ def preferences():
                             user_id=user_id,
                             question_subscriptions=question_subscriptions)
             else:
-                redirect(URL(r=request, c='members', f='preferences', vars=dict(saved=1)))
+                redirect(URL(
+                    r=request,
+                    c='members',
+                    f='preferences',
+                    vars=dict(saved=1)))
         else:
             redirect(URL(r=request, c='default', f='index'))
     else:
@@ -499,7 +504,8 @@ def comment_question():
                     # Update the question's last update date/user
                     db(db.questions.id==qid).update(modified_by=modified_by,
                                                     modified_on=request.now)
-                    # Also, increment the number of questions this user has posted
+                    # Also, increment the number of questions
+                    # this user has posted
                     stackhelper.increment_member_property('m_comments',
                                                           modified_by,
                                                           1)
@@ -551,7 +557,8 @@ def comment_answer():
                     # Update the original question's last update date/user
                     db(db.questions.id==qid).update(modified_by=modified_by,
                                                     modified_on=request.now)
-                    # Also, increment the number of questions this user has posted
+                    # Also, increment the number of questions this user
+                    # has posted
                     stackhelper.increment_member_property('m_comments',
                                                           modified_by,
                                                           1)
@@ -676,9 +683,11 @@ def vote():
             if auth_user.has_role('Manager,SysAdmin'):
                 score_log_insert = True
             else:
-                # Here is when things get a little iffy, in this scenario, you may:
-                # DOWNVOTE: Only if you have no previous record of up/dn vote for
-                #           this particular record (question/answer/comment), OR
+                # Here is when things get a little iffy, in this scenario,
+                # you may:
+                # DOWNVOTE: Only if you have no previous record of
+                # up/dn vote for
+                #           this particular record (question/answer/comment),OR
                 #           you have previously UPVOTED this particular record.
                 # UPVOTE: Only if you have no previous record of up/dn vote for
                 #         this particular record (question/answer/comment), OR
@@ -695,7 +704,7 @@ def vote():
                     if upvotes > dnvotes:
                         err = 1 # You may not up vote the same question twice
                     elif upvotes == dnvotes and upvotes == 1:
-                        err = 2 # You may not vote up or down anymore for this Q
+                        err = 2 # You may not vote up or down anymore 4 this Q
                     else:
                         # Allow Upvoting
                         score_log_insert = True
@@ -732,7 +741,7 @@ def vote():
                     # In addition, update the auth_role_id of the user that will
                     # receive the "points"
                     # Note, to this version, only up/dn votes on questions and
-                    # answers are awarded points to matter for the user's profile
+                    # answers are awarded points to matter for the user's prof.
                     # Comments do not. (this coud change though)
                     # Also here update the user's appropriate fields pertaining
                     # points
@@ -951,3 +960,42 @@ def logout():
         del session['lang']
     auth_user.logout()
     redirect(URL(r=request, c='default', f='index', vars=dict(lang='')))
+    
+def flag_entry():
+    # Creates an administrator message crafted specifically to inform
+    # them of a possible offensive comment or answer posted by a jackass
+    # entry_id is either answer_id or comment_id
+    # question_id is as its name implies
+    # entry_type is either 'comment', or 'answer'
+    entry_id, question_id, entry_type = request.args
+    # Cannot be None since caller is auth
+    user_id = auth_user.get_user_id()
+    user_name = stackhelper.get_member_property('m_display_name',
+                                                user_id, '') or \
+              auth_user.get_user_name() 
+    redirect_url = URL(r=request, c='default', f='view', args=[question_id])
+    user_id_url = URL(r=request, c='admin', f='edit_user', args=[user_id])
+    if entry_type == 'answer':
+        entry = db(db.answers.id==entry_id).select(db.answers.ALL)[0]
+    else:
+        entry = db(db.comments.id==entry_id).select(db.comments.ALL)[0]
+    message = """<a href="%s" title="">%s</a> has reported an inappropriate
+    %s. The contents of the %s are:
+    
+    %s
+    
+    Question Location: <a href="%s" title="">%s</a>
+    """ % (user_id_url,
+           user_name,
+           entry_type,
+           entry_type,
+           entry.description,
+           redirect_url,
+           redirect_url)
+    db.admin_messages.insert(
+        auth_user_id=user_id,
+        subject="Inappropriate %s reported by %s" % (entry_type, user_name),
+        message=parse_content(message),
+        creation_date=request.now,
+        read_flag=False)
+    redirect(redirect_url)

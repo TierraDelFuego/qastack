@@ -53,8 +53,8 @@ class QAStackHelper(object):
         it returns a boolean value describing success in adding the property
         or failure when the prioperty could not be updated """
         if self.auth_user.is_admin(): # <-- May not be needed
-            prop = self.db(self.db.system_properties.property_name==property_name
-                           ).select(self.db.system_properties.id)
+            prop = self.db(self.db.system_properties.property_name==\
+                           property_name).select(self.db.system_properties.id)
             if prop:
                 prop_id = prop[0].id
                 self.db(self.db.system_properties.id==prop_id
@@ -75,8 +75,8 @@ class QAStackHelper(object):
         user_property_value = default_value
         # First check if the property exists
         property_check = self.db(
-            self.db.member_properties_skel.property_name==property_name).select(
-            self.db.member_properties_skel.id)
+            self.db.member_properties_skel.property_name==\
+            property_name).select(self.db.member_properties_skel.id)
         if property_check:
             property_id = property_check[0].id
             user_prop = self.db(
@@ -155,8 +155,8 @@ class QAStackHelper(object):
 
     def has_question_subscription(self, question_id, user_id):
         has_s = self.db((self.db.question_subscriptions.auth_user_id==user_id) &\
-                        (self.db.question_subscriptions.question_id==question_id
-                         )).count() > 0
+                        (self.db.question_subscriptions.question_id==\
+                         question_id)).count() > 0
         return has_s
 
     def add_question_subscription(self, question_id, user_id):
@@ -487,8 +487,6 @@ class QAStackHelper(object):
             new_user_role_idx = role_list.index(new_user_role)
         except ValueError:
             new_user_role_idx = -1 # Unknown Role
-
-        #raise ValueError(user_role, new_user_role,user_role_idx,new_user_role_idx,)
 
         # Only update if the new user role is greater than the previous one
         if new_user_role_idx > user_role_idx:

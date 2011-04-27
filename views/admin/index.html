@@ -54,7 +54,7 @@
                                     Anonymous
                                 {{else:}}
                                     <a title="Edit this User"
-                                        href="{{=URL(r=request, c='admin', f='edit_user', args=[3])}}"
+                                        href="{{=URL(r=request, c='admin', f='edit_user', args=[message.admin_messages.auth_user_id])}}"
                                         >{{=stackhelper.get_member_property('m_display_name', message.admin_messages.auth_user_id, 'Unknown User')}}</a>
                                 {{pass}}
                             </td>

@@ -77,7 +77,8 @@ class StrippingParser(sgmllib.SGMLParser):
 def handle_pygments(pat, content, pygments_lexer):
     data = pat.search(content)
     while data:
-        code_found = highlight(data.group(2), pygments_lexer(), HtmlFormatter(noclasses=True));
+        code_found = highlight(data.group(2), pygments_lexer(),
+                               HtmlFormatter(noclasses=True));
         # This is needed to the global conversion to '<br />'s later on applies
         # to highlighted code as well.
         code_found = code_found.replace('<br />', '\n')
@@ -110,22 +111,28 @@ def parse_content(content, mode="removeall"):
         # JavaLexer
         try:
             if clean_content.find('[code-python]') >= 0:
-                pat = re.compile(r'(\[code-python\])(.*?)(\[/code-python\])', re.DOTALL |  re.IGNORECASE | re.MULTILINE)
+                pat = re.compile(r'(\[code-python\])(.*?)(\[/code-python\])',
+                                 re.DOTALL |  re.IGNORECASE | re.MULTILINE)
                 clean_content = handle_pygments(pat, clean_content, PythonLexer)
             if clean_content.find('[code-c#]') >= 0:
-                pat = re.compile(r'(\[code-c#\])(.*?)(\[/code-c#\])', re.DOTALL |  re.IGNORECASE | re.MULTILINE)
+                pat = re.compile(r'(\[code-c#\])(.*?)(\[/code-c#\])',
+                                 re.DOTALL |  re.IGNORECASE | re.MULTILINE)
                 clean_content = handle_pygments(pat, clean_content, CSharpLexer)
             if clean_content.find('[code-c]') >= 0:
-                pat = re.compile(r'(\[code-c\])(.*?)(\[/code-c\])', re.DOTALL |  re.IGNORECASE | re.MULTILINE)
+                pat = re.compile(r'(\[code-c\])(.*?)(\[/code-c\])',
+                                 re.DOTALL |  re.IGNORECASE | re.MULTILINE)
                 clean_content = handle_pygments(pat, clean_content, CLexer)
             if clean_content.find('[code-c++]') >= 0:
-                pat = re.compile(r'(\[code-c\+\+\])(.*?)(\[/code-c\+\+\])', re.DOTALL |  re.IGNORECASE | re.MULTILINE)
+                pat = re.compile(r'(\[code-c\+\+\])(.*?)(\[/code-c\+\+\])',
+                                 re.DOTALL |  re.IGNORECASE | re.MULTILINE)
                 clean_content = handle_pygments(pat, clean_content, CppLexer)
             if clean_content.find('[code-java]') >= 0:
-                pat = re.compile(r'(\[code-java\])(.*?)(\[/code-java\])', re.DOTALL |  re.IGNORECASE | re.MULTILINE)
+                pat = re.compile(r'(\[code-java\])(.*?)(\[/code-java\])',
+                                 re.DOTALL |  re.IGNORECASE | re.MULTILINE)
                 clean_content = handle_pygments(pat, clean_content, JavaLexer)
             if clean_content.find('[code-php]') >= 0:
-                pat = re.compile(r'(\[code-php\])(.*?)(\[/code-php\])', re.DOTALL |  re.IGNORECASE | re.MULTILINE)
+                pat = re.compile(r'(\[code-php\])(.*?)(\[/code-php\])',
+                                 re.DOTALL |  re.IGNORECASE | re.MULTILINE)
                 clean_content = handle_pygments(pat, clean_content, PhpLexer)
             if clean_content.find('[code]') >= 0:
                 clean_content = clean_content.replace('[code]', '<pre>')

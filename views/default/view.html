@@ -224,7 +224,7 @@
                                     {{=XML(T('Accepted Answer'))}}
                                 </div>
                             {{pass}}
-                            <!-- owner or admin options... //-->
+                            <!-- owner, admin or member options... //-->
                             <div class="info" style="margin-bottom:10px;">
                                 {{if auth_user.has_role('Reviewer,TeamLead,Manager,SysAdmin'):}}
                                     <a href="{{=URL(r=request, c='members', f='comment_answer',
@@ -239,6 +239,13 @@
                                        title="{{=XML(T('Accept this Answer'))}}"
                                        onclick="return confirm('This will change the answer status for this question, Please Confirm');"
                                        class="bold">{{=XML(T('Accept this Answer'))}}</a>
+                                {{pass}}
+                                {{if auth_user.is_auth():}}
+                                    |
+                                    <a title=""
+                                    href="{{=URL(r=request, c='members', f='flag_entry', args=[answer.answers.id, question.questions.id, 'answer'])}}"
+                                    onclick="return confirm('This will flag this answer for removal by the administrators\n\nPlease Confirm.');"
+                                    class="bold">Report as Offensive</a>
                                 {{pass}}
                             </div>
                             <span class="explain"><a name="answer_{{=answer.answers.id}}">{{=XML(T('By'))}}: {{=answer.member_properties.property_value}}
@@ -284,6 +291,12 @@
                                                 ({{=stackhelper.get_user_role(comment.comments.modified_by)}})</a>,
                                                 {{=XML(T('Updated'))}}: {{=prettydate(comment.comments.modified_on, T)}},
                                                 {{=XML(T('Votes'))}}: {{=comment.comments.votes_up - comment.comments.votes_dn}}
+                                                {{if auth_user.is_auth():}}                                    |
+                                                    <a title=""
+                                                    href="{{=URL(r=request, c='members', f='flag_entry', args=[comment.comments.id, question.questions.id, 'comment'])}}"
+                                                    onclick="return confirm('This will flag this comment for removal by the administrators\n\nPlease Confirm.');"
+                                                    class="bold">Report as Offensive</a>
+                                                {{pass}}
                                             </div>
                                             <div class="pad-comment">{{=XML(parse_content(comment.comments.description))}}</div>
                                         </td>

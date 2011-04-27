@@ -367,7 +367,7 @@ div.info, p.info {
     font-size:90%;
     font-weight:bold;
     color:teal;
-    border-bottom:1px solid teal;
+    /*  border-bottom:1px solid teal; */
 }
 
 div.info-pretty {

@@ -288,3 +288,10 @@ def view_admin_message():
     # In addition, update this message's status to "read"
     db(db.admin_messages.id==request.args[0]).update(read_flag=True)
     return dict(message=message)
+
+@auth_user.requires_role('SysAdmin')
+def qa_mgmt():
+    # Get the counts for the different types of "problematic" questions
+    # and answers.
+    
+    return dict()
