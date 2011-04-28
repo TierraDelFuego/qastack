@@ -17,7 +17,7 @@ def index():
     # Nasty-truncate for preview purposes
     msgs = db.admin_messages.message[:40]
     
-    # Here, if deletiojn of messages was requested, carry out the request...
+    # Here, if deletion of messages was requested, carry out the request...
     form_submitted = req.form_submitted
     msg_ids = req.msg_ids
     if msg_ids is not None:
