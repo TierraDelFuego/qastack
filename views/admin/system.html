@@ -25,7 +25,7 @@
         {{for prop in sys_properties:}}
             {{if prop.property_name == 's_info_html':}}
                 <p>{{=prop.property_desc}}:</p>
-                <div class="paragraph-big"
+                <div class="paragraph-big">
                     <textarea id="{{=prop.property_name}}"
                               name="{{=prop.property_name}}"
                               style="width:90%;height:130px;"
@@ -40,7 +40,7 @@
         {{for prop in sys_properties:}}
             {{if prop.property_name != 's_info_html':}}
                 <p>{{=prop.property_desc}}:</p>
-                <div class="paragraph-big"
+                <div class="paragraph-big">
                     <input type="text"
                            id="{{=prop.property_name}}"
                            name="{{=prop.property_name}}"
@@ -50,7 +50,7 @@
                 </div>
             {{pass}}
         {{pass}}
-        
+                
         <div class="paragraph">
             <input type="submit" id="submit2" value="Save Changes" onclick="return confirm('Please confirm you wish to save your changes')" />
         </div>
