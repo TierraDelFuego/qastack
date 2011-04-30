@@ -350,7 +350,7 @@ div.hr hr {
     font-weight:bold;
 }
 
-div.paragraph {
+div.paragraph, div.paragraph-bottom {
     margin-bottom:20px;
 }
 
@@ -360,6 +360,10 @@ div.paragraph-big {
 
 div.paragraph-all {
     margin-bottom:20px;
+    margin-top:20px;
+}
+
+div.paragraph-top {
     margin-top:20px;
 }
 
@@ -374,9 +378,14 @@ div.info-pretty {
     font-size:90%;
     text-align:left;
     margin-bottom:15px;
-    border-top:1px solid #eee8aa;
-    border-bottom:1px solid #eee8aa;
-    background-color:#fafad2;
+    border-top:1px solid #cacaca;
+    border-bottom:1px solid #cacaca;
+    background-color:#fafafa;
+    margin:5px 0 5px 0;
+}
+
+div.info-pretty div {
+    margin:5px 0 5px 0;
 }
 
 span.explain {
@@ -437,8 +446,8 @@ div.pad-comment {
 }
 
 div.answered {
-    color:red;
-    background-color:#ffffe0;
+    color:#ffffff;
+    background-color:#669999;
     margin-bottom:10px;
     font-size:120%;
     font-weight:bold;

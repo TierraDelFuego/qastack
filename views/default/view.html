@@ -32,49 +32,51 @@
 
 {{if auth_user.is_auth():}}
     <div class="info-pretty">
-        {{if view_info['is_subscribed']:}}
-            <a href="{{=URL(r=request, c='members', f='unsubscribe', args=[question.questions.id])}}"
-               title="{{=XML(T('Unsubscribe from this Question'))}}"
-               class="bold">{{=XML(T('Unsubscribe'))}}</a>
-        {{else:}}
-            <a href="{{=URL(r=request, c='members', f='subscribe', args=[question.questions.id])}}"
-               title="{{=XML(T('Subscribe to this Question'))}}"
-               class="bold">{{=XML(T('Subscribe'))}}</a>
-        {{pass}} |
-        <!-- More "admin" options can be specified in this section //-->
-        <a href="#add_answer" title="{{=XML(T('Answer this Question'))}}"
-           class="bold">{{=XML(T('Answer'))}}</a>
-        {{if can_comment:}} |
-            <a href="{{=URL(r=request,
-                            c='members',
-                            f='comment_question',
-                            anchor='add_comment',
-                            args=[question.questions.id])}}"
-               title="{{=XML(T('Comment on this Question'))}}"
-               class="bold">{{=XML(T('Comment'))}}</a>
-        {{pass}}
-        {{if auth_user.has_role('TeamLead,Manager,SysAdmin'):}}
-            |
-            {{if view_info.get('featured_votes', 0) >= 3:}}
-                <span class="disabled-bold">{{=XML(T('Featured Question'))}}</span>
+        <div>
+            {{if view_info['is_subscribed']:}}
+                <a href="{{=URL(r=request, c='members', f='unsubscribe', args=[question.questions.id])}}"
+                   title="{{=XML(T('Unsubscribe from this Question'))}}"
+                   class="bold">{{=XML(T('Unsubscribe'))}}</a>
             {{else:}}
-                <a href="{{=URL(r=request, c='members', f='flag', args=['question', question.questions.id, 'featured'], vars=dict(qid=question.questions.id))}}"
-                    title="{{=XML(T('Award Featured Status'))}}"
-                    class="bold">{{=XML(T('Award Featured Status'))}}
-                    ({{=view_info.get('featured_votes', '??')}})</a>
+                <a href="{{=URL(r=request, c='members', f='subscribe', args=[question.questions.id])}}"
+                   title="{{=XML(T('Subscribe to this Question'))}}"
+                   class="bold">{{=XML(T('Subscribe'))}}</a>
+            {{pass}} |
+            <!-- More "admin" options can be specified in this section //-->
+            <a href="#add_answer" title="{{=XML(T('Answer this Question'))}}"
+               class="bold">{{=XML(T('Answer'))}}</a>
+            {{if can_comment:}} |
+                <a href="{{=URL(r=request,
+                                c='members',
+                                f='comment_question',
+                                anchor='add_comment',
+                                args=[question.questions.id])}}"
+                   title="{{=XML(T('Comment on this Question'))}}"
+                   class="bold">{{=XML(T('Comment Question'))}}</a>
             {{pass}}
-        {{pass}}
-        {{if auth_user.has_role('TeamLead,Manager,SysAdmin,Reviewer'):}}
-            |
-            {{if view_info.get('offensive_votes', 0) >= 3:}}
-                <span class="disabled-bold">{{=XML(T('Offensive Question'))}}</span>
-            {{else:}}
-                <a href="{{=URL(r=request, c='members', f='flag', args=['question', question.questions.id, 'offensive'], vars=dict(qid=question.questions.id))}}"
-                title="{{=XML(T('Vote for Offensive Content'))}}"
-                class="bold">{{=XML(T('Offensive Question'))}}
-                ({{=view_info.get('offensive_votes', '??')}})</a>
+            {{if auth_user.has_role('TeamLead,Manager,SysAdmin'):}}
+                |
+                {{if view_info.get('featured_votes', 0) >= 3:}}
+                    <span class="disabled-bold">{{=XML(T('Featured Question'))}}</span>
+                {{else:}}
+                    <a href="{{=URL(r=request, c='members', f='flag', args=['question', question.questions.id, 'featured'], vars=dict(qid=question.questions.id))}}"
+                        title="{{=XML(T('Award Featured Status'))}}"
+                        class="bold">{{=XML(T('Award Featured Status'))}}
+                        ({{=view_info.get('featured_votes', '??')}})</a>
+                {{pass}}
             {{pass}}
-        {{pass}}
+            {{if auth_user.has_role('TeamLead,Manager,SysAdmin,Reviewer'):}}
+                |
+                {{if view_info.get('offensive_votes', 0) >= 3:}}
+                    <span class="disabled-bold">{{=XML(T('Offensive Question'))}}</span>
+                {{else:}}
+                    <a href="{{=URL(r=request, c='members', f='flag', args=['question', question.questions.id, 'offensive'], vars=dict(qid=question.questions.id))}}"
+                    title="{{=XML(T('Vote for Offensive Content'))}}"
+                    class="bold">{{=XML(T('Offensive Question'))}}
+                    ({{=view_info.get('offensive_votes', '??')}})</a>
+                {{pass}}
+            {{pass}}
+        </div>
     </div>
 {{pass}}
 
@@ -139,6 +141,17 @@
                             {{pass}}
                         </div>
                     </div>
+                    {{if can_comment:}}
+                        <div class="paragraph-top">
+                            <a href="{{=URL(r=request,
+                                c='members',
+                                f='comment_question',
+                                anchor='add_comment',
+                                args=[question.questions.id])}}"
+                                title="{{=XML(T('Comment on this Question'))}}"
+                                class="bold">{{=XML(T('Comment on this Question'))}}</a>
+                        </div>
+                    {{pass}}
                 </td>
             </tr>
         </tbody>
@@ -148,7 +161,7 @@
         <table class="comment-table" cellspacing="0" cellpadding="0">
             <thead>
                 <tr>
-                    <th><b>{{=XML(T('Comments'))}}</b></th>
+                    <th><div style="margin:5px 0 5px 0;"><b>{{=XML(T('Comments For Question'))}}</b></div></th>
                 </tr>
             </thead>
             <tbody>
@@ -179,6 +192,12 @@
                             {{=XML(T('Updated'))}}
                             {{=prettydate(comment.comments.modified_on, T)}},
                             {{=XML(T('Votes'))}}: {{=comment.comments.votes_up - comment.comments.votes_dn}}
+                            {{if auth_user.is_auth():}} |
+                                <a title=""
+                                href="{{=URL(r=request, c='members', f='flag_entry', args=[comment.comments.id, question.questions.id, 'comment'])}}"
+                                onclick="return confirm('This will flag this comment for removal by the administrators\n\nPlease Confirm.');"
+                                class="bold">Report as Offensive</a>
+                            {{pass}}
                         </div>
                         <div class="pad-comment">{{=XML(parse_content(comment.comments.description))}}</div>
                     </td>
@@ -197,7 +216,7 @@
         <tbody>
             {{for answer in answers:}}
                 <tr>
-                    <td style="text-align:center;vertical-align:top;width:100px;{{if answer.answers.is_answer:}}border:1px solid #eee8aa;background-color:#fafad2;{{pass}}">
+                    <td style="text-align:center;vertical-align:top;width:100px;{{if answer.answers.is_answer:}}border-top:2px solid #bababa;border-left:2px solid #bababa;border-bottom:2px solid #eaeaea;border-right:2px solid #eaeaea;background-color:#fafafa;{{pass}}">
                         {{if stackhelper.user_can_vote():}}
                             <a href="{{=URL(r=request, c='members', f='vote', args=['answer', answer.answers.id, 'up', question.questions.id])}}" class="nolink"
                             title="{{=XML(T('Vote Up'))}}"><img src="{{=URL(r=request, c='static/images/medium', f='checkmark.png')}}"
@@ -220,8 +239,8 @@
                     <td style="vertical-align:top;">
                         <div class="lsep">
                             {{if answer.answers.is_answer:}}
-                                <div class="answered">
-                                    {{=XML(T('Accepted Answer'))}}
+                                <div class="info-pretty">
+                                    <div style="font-size:120%;font-weight:bold;text-align:center;">{{=XML(T('Accepted Answer'))}}</div>
                                 </div>
                             {{pass}}
                             <!-- owner, admin or member options... //-->
@@ -263,7 +282,7 @@
                             <table class="comment-table" cellspacing="0" cellpadding="0">
                                 <thead>
                                     <tr>
-                                        <th><b>{{=XML(T('Comments'))}}</b></th>
+                                        <th><div style="margin:5px 0 5px 0;"><b>{{=XML(T('Comments For Answer'))}}</b></div></th>
                                     </tr>
                                 </thead>
                                 <tbody>
