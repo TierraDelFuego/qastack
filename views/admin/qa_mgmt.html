@@ -13,9 +13,19 @@
 <p>The following shortcuts/reports are available:</p>
 
 <ul>
-    <li>Offensive Questions (Invisible Questions) (100)</li>
-    <li>Offensive Comments to Questions (100)</li>
-    <li>Offensive Answers (100)</li>
-    <li>Offensive Comments to Answers (100)</li>
+    <li><a href="{{=URL(r=request, c='admin', f='qa_mgmt', args=['oq'])}}" title="">Offensive Questions (Invisible Questions)</a> (100)</li>
+    <li><a href="{{=URL(r=request, c='admin', f='qa_mgmt', args=['ocq'])}}" title="">Offensive Comments to Questions</a> (100)</li>
+    <li><a href="{{=URL(r=request, c='admin', f='qa_mgmt', args=['oa'])}}" title="">Offensive Answers</a> (100)</li>
+    <li><a href="{{=URL(r=request, c='admin', f='qa_mgmt', args=['oca'])}}" title="">Offensive Comments to Answers</a> (100)</li>
 </ul>
 
+{{if request.args:}}
+    {{if request.args[0] == 'oq':}}
+        {{if payload:}}
+            <table cellspacing="0" cellpadding="0" class="ftable">
+            </table>
+        {{pass}}
+    {{else:}}
+        <p>not Implemented yet: {{=request.args[0]}}</p>
+    {{pass}}
+{{pass}}

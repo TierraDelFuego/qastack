@@ -293,5 +293,11 @@ def view_admin_message():
 def qa_mgmt():
     # Get the counts for the different types of "problematic" questions
     # and answers.
+    payload = []
+    args = request.args
+    if args:
+        if args[0] == 'oq':
+            # Grab all questions that are offensive
+            payload = 1
     
-    return dict()
+    return dict(payload=payload)
