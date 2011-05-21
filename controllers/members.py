@@ -384,7 +384,7 @@ def ask():
         title = req.question_title
         question = req.question
         tags = '' if req.tags is None else req.tags.lower()
-        tag_lst = tags.split(',')
+        tag_lst = list(set(tags.split(',')))
         preview_question = req.preview_question
         post_question = req.post_question
         if title and question and tags:
@@ -415,19 +415,17 @@ def ask():
                     views=0)
                 # Next, add the specified tags
                 for tag in tag_lst:
-                    tag_r = db(db.tags.tagname==tag).select(db.tags.ALL)
-                    if tag_r:
-                        tag_id = tag_r[0].id
-                        # Tag Exists, increment its value
-                        db(db.tags.id==tag_id).update(
-                            tag_cnt=tag_r[0].tag_cnt + 1)
-                    else:
-                        # This tag does not exist, add it to our tags table
-                        tag_id = db.tags.insert(tagname=tag, is_enabled=True)
-
-                    # Now assign this tag to the question
-                    db.question_tags.insert(question_id=question_id,
-                                            tag_id=tag_id)
+                    if tag.strip():
+                        tag_r = db(db.tags.tagname==tag).select(db.tags.ALL)
+                        if tag_r:
+                            tag_id = tag_r[0].id
+                        else:
+                            # This tag does not exist, add it to our tags table
+                            tag_id = db.tags.insert(tagname=tag, is_enabled=True)
+    
+                        # Now assign this tag to the question
+                        db.question_tags.insert(question_id=question_id,
+                                                tag_id=tag_id)
                 # Now subscribe this user if hs/she requested to do so
                 if req.subscribe:
                     db.question_subscriptions.insert(auth_user_id=user_id,
@@ -1046,46 +1044,27 @@ def edit_question():
                 # wipe out all the tags for this question
                 db(db.question_tags.question_id==qid).delete()
                 new_tag_ids = []
-                for tag in tags.split(','):
+                # Remove duplicates, don'twant to say it is a "hack" but it
+                # just might be...
+                tag_list = list(set(tags.lower().split(',')))
+                for tag in tag_list:
                     # if this tag does not exist in the master tags table,
                     # add it, along with a reference to the ID into our
                     # question_tags table
-                    is_tag = db(db.tags.tagname==tag).select(db.tags.id)
-                    if is_tag:
-                        # Tag exists already, use its id to add the new
-                        # tag pertaining this question
-                        tag_id = is_tag[0].id
-                    else:
-                        # No master tag exists, create it
-                        tag_id = db.tags.insert(tagname=tag,
-                                                is_enabled=True,
-                                                tag_cnt=1)
-                    # Finally, add this tag_id to our question_tags table
-                    db.question_tags.insert(question_id=qid,
-                                            tag_id=tag_id)
-                    new_tag_ids.append(tag_id)
-                    
-                # Here we need to do a bit of clean-up on the master tags,
-                # if the user removed any of the existing tags in the question,
-                # I need to decrement the tag_cnt value of the master tags
-                # table, however, if the tag_cnt value reaches 0, then I need
-                # to actually delete the tag record itself...
-                # for this, I am relying on my current_tag_ids/new_tag_ids
-                # variables..
-                # The elements in current_tag_ids that are NOT in new_tag_ids
-                # will have to be subtracted or deleted from table tags
-                old_set = set(current_tag_ids)
-                new_set = set(new_tag_ids)
-                remove_tag_list = list(old_set.difference(new_set))
-                for tag_id in remove_tag_list:
-                    cur_tag_cnt = db(db.tags.id==tag_id).select(
-                        db.tags.tag_cnt)[0].tag_cnt
-                    if cur_tag_cnt - 1 == 0:
-                        # Remove it from master tag list
-                        db(db.tags.id==tag_id).delete()
-                    else:
-                        # Update the tag_cnt only, don't delete it
-                        db(db.tags.id==tag_id).update(tag_cnt=cur_tag_cnt-1)
+                    if tag.strip():
+                        is_tag = db(db.tags.tagname==tag).select(db.tags.id)
+                        if is_tag:
+                            # Tag exists already, use its id to add the new
+                            # tag pertaining this question
+                            tag_id = is_tag[0].id
+                        else:
+                            # No master tag exists, create it
+                            tag_id = db.tags.insert(tagname=tag,
+                                                    is_enabled=True)
+                        # Finally, add this tag_id to our question_tags table
+                        db.question_tags.insert(question_id=qid,
+                                                tag_id=tag_id)
+                        new_tag_ids.append(tag_id)
                 redirect(URL(r=request, c='default', f='view', args=[qid]))
             else:
                 wiew_info['errors'].append("Please make sure you specify "
@@ -1117,3 +1096,61 @@ def edit_question():
                 view_info=view_info,
                 tags=tags,
                 can_edit=can_edit)
+
+
+@auth_user.requires_login()
+def edit_answer():
+    """ Answers can be edited:
+    - By the SysAdmin, regardless
+    - By the Answer owner
+    Answers may not be edited (SysAdmin except):
+    - If te answer is marked as "answered" by the question originator/SysAdmin
+    
+    """
+    req = request.vars
+    view_info = {'errors': []}
+    auth_user_id = auth_user.get_user_id()
+    can_edit = False
+    redir = False # Flag to trigger redirection back to View Question page
+    if req.form_submitted:
+        aid = req.aid
+        description = req.description.strip()
+        if description:
+            # All seems fine, update
+            db(db.answers.id==aid).update(description=description,
+                                          modified_by=auth_user_id,
+                                          modified_on=request.now)
+            # Then get out of here
+            redir = True
+        else:
+            wiew_info['errors'].append("Please make sure you specify "
+                                       "a valid content for your answer.")
+    else:
+        aid = request.args[0]
+
+    answer = db(db.answers.id==aid).select(db.answers.ALL)[0]
+    question = db(db.questions.id==answer.question_id).select(
+        db.questions.ALL)[0]
+    tags = db((db.tags.id==db.question_tags.tag_id) &\
+              (db.question_tags.question_id==question.id)).select(
+                  db.tags.tagname,
+                  orderby=db.tags.tagname)
+    
+    if redir:
+        redirect(URL(r=request, c='default', f='view', args=[question.id]))
+    
+    if auth_user.is_admin():
+        can_edit = True
+    else:
+        # No admin, can you still edit?
+        if answer.created_by == auth_user_id and\
+           answer.is_visible and not\
+               answer.is_answer:
+            can_edit = True
+            
+    return dict(answer=answer,
+                question=question,
+                tags=tags,
+                view_info=view_info,
+                can_edit=can_edit)
+

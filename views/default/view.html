@@ -264,6 +264,12 @@
                                        onclick="return confirm('This will change the answer status for this question, Please Confirm');"
                                        class="bold">{{=XML(T('Accept this Answer'))}}</a>
                                 {{pass}}
+                                {{if auth_user.has_role('Manager,SysAdmin') or (auth_user.get_user_id() == answers.answer.created_by and not answer.answers.is_answer):}}
+                                    |
+                                    <a href="{{=URL(r=request, c='members', f='edit_answer', args=[answer.answers.id])}}"
+                                       title="{{=XML(T('Edit this Answer'))}}"
+                                       class="bold">{{=XML(T('Edit this Answer'))}}</a>
+                                {{pass}}
                                 {{if auth_user.is_auth():}}
                                     |
                                     <a title=""

@@ -543,15 +543,17 @@ class QAStackHelper(object):
         start_px = 22
         cnt = 0
         bold_toggle = True
-        tags = self.db(self.db.tags.is_enabled==True).select(
+        tag_cnt = self.db.question_tags.id.count()
+        tags = self.db(self.db.tags.id==self.db.question_tags.tag_id).select(
             self.db.tags.tagname,
-            self.db.tags.tag_cnt,
-            limitby=(0,12),
-            orderby=~self.db.tags.tag_cnt|self.db.tags.tagname)
+            tag_cnt,
+            groupby=self.db.tags.id,
+            orderby=~tag_cnt,
+            limitby=(0, 12))
         html = ''
         for tag in tags:
-            tagname = tag.tagname
-            tag_cnt = tag.tag_cnt
+            tagname = tag.tags.tagname
+            tag_cnt = tag['COUNT(question_tags.id)']
             if bold_toggle:
                 html_stub = 'font-weight:bold;'
                 bold_toggle = False

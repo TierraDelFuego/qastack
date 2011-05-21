@@ -309,12 +309,15 @@ def view():
         view_info=view_info)
 
 def tags():
-    """ Returns a simple liet of all the mst popular tags """
+    """ Returns a simple list of all the mst popular tags """
     view_info = {}
     view_info.update(dict(errors=[]))
-    tags = db().select(
-        db.tags.ALL,
-        orderby=~db.tags.tag_cnt,
+    tag_cnt = db.question_tags.id.count()
+    tags = db(db.tags.id==db.question_tags.tag_id).select(
+        db.tags.tagname,
+        tag_cnt,
+        groupby=db.tags.id,
+        orderby=~tag_cnt,
         limitby=(0, 30))
     return dict(tags=tags,
                 view_info=view_info)

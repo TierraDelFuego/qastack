@@ -162,7 +162,6 @@ db.define_table('score_log',
 db.define_table('tags',
     Field('tagname', 'string', required=True, length=255),
     Field('is_enabled', 'boolean', required=True, default=True),
-    Field('tag_cnt', 'integer', required=True, default=1),
     migrate=migrate)
 
 # Tag/Question relationship

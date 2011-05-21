@@ -14,9 +14,9 @@
 <p>{{=XML(T('The following list shows the 30 most popular tags, click on any of them to view questions pertaining these tags'))}}.</p>
 
 <div class="paragraph-all">
-    <table cellspacing="0" cellpadding="2" style="margin:0 0 10px 10px;border:1px solid #888888;">
+    <table cellspacing="0" cellpadding="0" class="ftable">
         <thead>
-            <tr style="background-color:#AAAAAA;border-bottom:1px solid black;">
+            <tr class="shadedarker">
                 <th>Rank</th>
                 <th style="text-align:left;">{{=XML(T('Tagname'))}}</th>
                 <th>{{=XML(T('Count'))}}</th>
@@ -24,13 +24,13 @@
         </thead>
         <tbody>
             {{for idx,tag in enumerate(tags):}}
-                <tr {{if idx%2:}}style="background-color:#eaeaea;"{{pass}}>
-                    <td style="border-right:1px solid #dddddd;">{{=idx+1}}</td>
-                    <td style="border-right:1px solid #dddddd;">
-                        <a href="{{=URL(r=request, c='default', f='index', args=['tags'], vars=dict(tag=tag.tagname))}}"
-                        title="{{=XML(T('View questions related to'))}} {{=tag.tagname}}">{{=tag.tagname}}</a>
+                <tr {{if idx%2:}}class="shadedark"{{pass}}>
+                    <td style="text-align:center;color:#cacaca;">{{=idx+1}}</td>
+                    <td>
+                        <a href="{{=URL(r=request, c='default', f='index', args=['tags'], vars=dict(tag=tag.tags.tagname))}}"
+                        title="{{=XML(T('View questions related to'))}} {{=tag.tags.tagname}}">{{=tag.tags.tagname}}</a>
                     </td>
-                    <td style="text-align:center;">{{=tag.tag_cnt}}</td>
+                    <td style="text-align:center;">{{=tag['COUNT(question_tags.id)']}}</td>
                 </tr>
             {{pass}}
         </tbody>
