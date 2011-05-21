@@ -2,11 +2,17 @@
 # -*- coding: utf-8 -*-
 
 # Control Migrations "automatically"
-migrate = True
+migrate = False
 
 # Allow auto completion work on Wing IDE
-if 0:
-    import db
+if 0: 
+    from gluon.globals import * 
+    from gluon.html import * 
+    from gluon.http import * 
+    from gluon.sqlhtml import SQLFORM, SQLTABLE, form_factory 
+    session = Session() 
+    request = Request() 
+    response = Response()
 
 db = DAL('sqlite://qastack.sqlite')
 #db = DAL('mysql://web2py:py2web@ds9.virtual:3306/qastack')

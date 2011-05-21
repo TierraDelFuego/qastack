@@ -150,6 +150,11 @@
                                 args=[question.questions.id])}}"
                                 title="{{=XML(T('Comment on this Question'))}}"
                                 class="bold">{{=XML(T('Comment on this Question'))}}</a>
+                            <!-- if the user has permissions to edit questions
+                            (being an admin, etc, or the logged in user is the
+                            creator of this question, then he can edit this) //-->
+                            | <a href="{{=URL(r=request, c='members', f='edit_question', args=[question.questions.id])}}" title="" class="bold"
+                            title="{{=XML(T('Edit Question'))}}">{{=XML(T('Edit Question'))}}</a> 
                         </div>
                     {{pass}}
                 </td>

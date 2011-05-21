@@ -999,3 +999,121 @@ def flag_entry():
         creation_date=request.now,
         read_flag=False)
     redirect(redirect_url)
+    
+    
+@auth_user.requires_login()
+def edit_question():
+    """ Questions Can be edited:
+    - By the creator of the question
+    - By the SysAdmin
+    Questions may not be edited:
+    - If the question has already be answered
+    - Except by the SysAdmin
+    
+    """
+    
+    req = request.vars
+    view_info = {'errors': []}
+    auth_user_id = auth_user.get_user_id()
+    if req.form_submitted:
+        qid = req.qid
+        # Save Form information
+        if req.update_question:
+            # Information needed at this point:
+            title = req.question_title.strip()
+            content = req.question.strip()
+            tags = req.tags.lower().strip()
+            if title and content and tags:
+                # All seems to be fine at this point...
+                # Update this question
+                db(db.questions.id==qid).update(title=title,
+                                                description=content,
+                                                modified_by=auth_user_id,
+                                                modified_on=request.now)
+                # Update the tags for this question (remove/re_add)
+                # This is a little tricky, since if a tag is removed, we
+                # also need to remove or decrease the tag count from
+                # out master tag table,
+                
+                # Grab the current tag ids that this question has (before
+                # any updates)
+                sql_tags = db((db.tags.is_enabled==True) &\
+                    (db.question_tags.question_id==qid) &\
+                    (db.question_tags.tag_id==db.tags.id)).select(
+                    db.tags.id)
+                current_tag_ids = [tag.id for tag in sql_tags]
+                
+                # wipe out all the tags for this question
+                db(db.question_tags.question_id==qid).delete()
+                new_tag_ids = []
+                for tag in tags.split(','):
+                    # if this tag does not exist in the master tags table,
+                    # add it, along with a reference to the ID into our
+                    # question_tags table
+                    is_tag = db(db.tags.tagname==tag).select(db.tags.id)
+                    if is_tag:
+                        # Tag exists already, use its id to add the new
+                        # tag pertaining this question
+                        tag_id = is_tag[0].id
+                    else:
+                        # No master tag exists, create it
+                        tag_id = db.tags.insert(tagname=tag,
+                                                is_enabled=True,
+                                                tag_cnt=1)
+                    # Finally, add this tag_id to our question_tags table
+                    db.question_tags.insert(question_id=qid,
+                                            tag_id=tag_id)
+                    new_tag_ids.append(tag_id)
+                    
+                # Here we need to do a bit of clean-up on the master tags,
+                # if the user removed any of the existing tags in the question,
+                # I need to decrement the tag_cnt value of the master tags
+                # table, however, if the tag_cnt value reaches 0, then I need
+                # to actually delete the tag record itself...
+                # for this, I am relying on my current_tag_ids/new_tag_ids
+                # variables..
+                # The elements in current_tag_ids that are NOT in new_tag_ids
+                # will have to be subtracted or deleted from table tags
+                old_set = set(current_tag_ids)
+                new_set = set(new_tag_ids)
+                remove_tag_list = list(old_set.difference(new_set))
+                for tag_id in remove_tag_list:
+                    cur_tag_cnt = db(db.tags.id==tag_id).select(
+                        db.tags.tag_cnt)[0].tag_cnt
+                    if cur_tag_cnt - 1 == 0:
+                        # Remove it from master tag list
+                        db(db.tags.id==tag_id).delete()
+                    else:
+                        # Update the tag_cnt only, don't delete it
+                        db(db.tags.id==tag_id).update(tag_cnt=cur_tag_cnt-1)
+                redirect(URL(r=request, c='default', f='view', args=[qid]))
+            else:
+                wiew_info['errors'].append("Please make sure you specify "
+                                           "Title, Question Content and "
+                                           "at least one tag to continue.")
+        else:
+            redirect(URL(r=request, c='default', f='view', args=[qid]))
+    else:
+        qid = request.args[0]
+    # Grab the question
+    question = db(db.questions.id==qid).select(db.questions.ALL)[0]
+    # .. also get the tags
+    sql_tags = db((db.tags.is_enabled==True) &\
+        (db.question_tags.question_id==qid) &\
+        (db.question_tags.tag_id==db.tags.id)).select(db.tags.tagname)
+    tags = ','.join([tag.tagname for tag in sql_tags])
+    # Set the can_edit flag here instead of in the view...
+    can_edit = False
+    if auth_user.is_admin():
+        can_edit = True
+    else:
+        # No admin, can you still edit?
+        if question.created_by == auth_user_id and\
+                                question.is_visible and\
+                                not (question.is_answered or\
+                                     question.is_closed):
+            can_edit = True
+    return dict(question=question,
+                view_info=view_info,
+                tags=tags,
+                can_edit=can_edit)
