@@ -1,6 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import sys, os
+
+from gluon.tools import *
+
 # Control Migrations "automatically"
 migrate = False
 
@@ -17,10 +21,6 @@ if 0:
 db = DAL('sqlite://qastack.sqlite')
 #db = DAL('mysql://web2py:py2web@ds9.virtual:3306/qastack')
 
-
-import sys, os
-from gluon.tools import *
-
 # Adds our "modules" folder to our search path
 path = os.path.join(request.folder, 'modules')
 if not path in sys.path:
@@ -33,20 +33,6 @@ from QAStackHelper import QAStackHelper
 auth_user = CustomAuthentication(globals(), db)
 stackhelper = QAStackHelper(globals(), db, auth_user)
 service = Service(globals()) # for json, xml, jsonrpc, xmlrpc, amfrpc
-
-# crud.settings.auth=auth                      # enforces authorization on crud
-# mail=Mail()                                  # mailer
-# mail.settings.server='smtp.gmail.com:587'    # your SMTP server
-# mail.settings.sender='you@gmail.com'         # your email
-# mail.settings.login='username:password'      # your credentials or None
-# auth.settings.mailer=mail                    # for user email verification
-# auth.settings.registration_requires_verification = True
-# auth.settings.registration_requires_approval = True
-# auth.messages.verify_email = \
-#  'Click on the link http://.../user/verify_email/%(key)s to verify your email'
-## more options discussed in gluon/tools.py
-#########################################################################
-
 
 #########################################################################
 ## Define your tables below, for example
@@ -72,7 +58,8 @@ db.define_table('auth_roles',
     migrate=migrate)
 
 db.define_table('auth_users',
-    Field('auth_alias', 'string', length=255, required=True), # Whatever login name the user authenticated with
+    # Whatever login name the user authenticated with
+    Field('auth_alias', 'string', length=255, required=True),
     Field('auth_passwd', 'string', length=255, required=True),
     Field('auth_created_on', 'datetime', required=True, default=request.now),
     Field('auth_modified_on', 'datetime', required=True, default=request.now),
@@ -90,20 +77,23 @@ db.define_table('member_properties_skel',
     Field('property_name', 'string', length=128, required=True),
     Field('property_desc', 'text', required=True),
     Field('member_editable', 'boolean', default=False),
-    Field('sort_order', 'integer', default=0, required=True), migrate=migrate)
+    Field('sort_order', 'integer', default=0, required=True),
+    migrate=migrate)
 
 # Member Properties (For each member)
 db.define_table('member_properties',
     Field('auth_user', db.auth_users),
     Field('property_id', db.member_properties_skel),
-    Field('property_value', 'string', length=255, required=True), migrate=migrate)
+    Field('property_value', 'string', length=255, required=True),
+    migrate=migrate)
 
 # Avatars
 db.define_table('member_avatars',
     Field('content_type', 'string', length=128, required=True),
     Field('auth_user_id', 'integer', required=True),
     Field('avatar_image', 'blob', required=True, default=None),
-    Field('avatar_active', 'boolean', required=True, default=True), migrate=migrate)
+    Field('avatar_active', 'boolean', required=True, default=True),
+    migrate=migrate)
 
 # Questions
 db.define_table('questions',
@@ -136,7 +126,8 @@ db.define_table('answers',
     Field('is_outstanding', 'boolean', required=True, default=False),
           migrate=migrate)
 
-# Comments - Comments get up/dn points but do not count towards the user's profile
+# Comments - Comments get up/dn points but do not count towards
+# the user's profile
 db.define_table('comments',
     Field('c_type', 'text', required=True), # 'Q' or 'A'
     Field('qa_id', 'integer', required=True), # ID of question or answer
@@ -147,12 +138,15 @@ db.define_table('comments',
     Field('created_on', 'datetime', required=True),
     Field('modified_by', db.auth_users),
     Field('modified_on', 'datetime', required=True),
-    Field('is_visible', 'boolean', required=True, default=True), migrate=migrate)
+    Field('is_visible', 'boolean', required=True, default=True),
+    migrate=migrate)
 
 # Score Log
 db.define_table('score_log',
-    Field('l_type', 'string', required=True), # 'Q', 'A', 'C'
-    Field('subtype', 'string', required=True), # 'voteup', 'votedn', 'offensive', 'outstanding', 'featured', 'accepted'
+    # 'Q', 'A', 'C'
+    Field('l_type', 'string', required=True),
+    # 'voteup', 'votedn', 'offensive', 'outstanding', 'featured', 'accepted'
+    Field('subtype', 'string', required=True),
     Field('qac_id', 'integer', required=True),
     Field('points', 'integer', required=True),
     Field('sender', db.auth_users),
@@ -174,7 +168,8 @@ db.define_table('question_tags',
 db.define_table('question_subscriptions',
     Field('auth_user_id', db.auth_users),
     Field('question_id', db.questions),
-    Field('is_active', 'boolean', default=True, required=True), migrate=migrate)
+    Field('is_active', 'boolean', default=True, required=True),
+    migrate=migrate)
 
 # When a question is updated, an email notification would be sent to all the
 # Subscribed users, a record will be created here for the cron job to pick up
@@ -182,7 +177,8 @@ db.define_table('question_subscriptions',
 db.define_table('subscriptions_notification',
     Field('subscription_id', db.question_subscriptions),
     Field('created_on', 'datetime', required=True),
-    Field('processed_on', 'datetime', required=False, default=None), migrate=migrate) # Important
+    Field('processed_on', 'datetime', required=False, default=None),
+    migrate=migrate) # Important
 
 # "Queue" messages sent to the administrators (All admins can view )
 db.define_table('admin_messages',
@@ -190,4 +186,5 @@ db.define_table('admin_messages',
     Field('subject', 'string', length=255, required=True),
     Field('message', 'text', required=True),
     Field('creation_date', 'datetime', required=True),
-    Field('read_flag', 'boolean', default=False, required=True), migrate=migrate)
+    Field('read_flag', 'boolean', default=False, required=True),
+    migrate=migrate)

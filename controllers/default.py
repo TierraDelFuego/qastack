@@ -309,7 +309,7 @@ def view():
         view_info=view_info)
 
 def tags():
-    """ Returns a simple list of all the mst popular tags """
+    """ Returns a simple list of all the most popular tags """
     view_info = {}
     view_info.update(dict(errors=[]))
     tag_cnt = db.question_tags.id.count()

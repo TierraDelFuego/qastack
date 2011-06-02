@@ -551,7 +551,10 @@ def comment_answer():
                                        created_by=modified_by,
                                        created_on=request.now,
                                        modified_by=modified_by,
-                                       modified_on=request.now)
+                                       modified_on=request.now,
+                                       votes_up=0,
+                                       votes_dn=0,
+                                       is_visible=True)
                     # Update the original question's last update date/user
                     db(db.questions.id==qid).update(modified_by=modified_by,
                                                     modified_on=request.now)
