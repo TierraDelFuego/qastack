@@ -34,9 +34,14 @@
         </fieldset>
         
         <div class="paragraph-all">
-            <input type="submit" id="update_answer name="answer_question" value="{{=XML(T('Update Comment'))}}"
+            <input type="submit" id="update_comment" name="update_comment" value="{{=XML(T('Update Comment'))}}"
                    onclick="return confirm('Please confirm you wish to edit this comment.');" />
             <input type="submit" id="cancel_edit" name="cancel_edit" value="{{=XML(T('Cancel'))}}" />
+            {{if auth_user.is_admin():}}
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                <input type="submit" id="hide_c" name="hide_c" value="Remove This Comment"
+                onclick="return confirm('WARNING: This comment will be hidden from public view.\n\nPlease Confirm');" />
+            {{pass}}
         </div>
     
         <div class="paragraph">

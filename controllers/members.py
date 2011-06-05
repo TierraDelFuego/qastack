@@ -1074,7 +1074,7 @@ def edit_question():
                 view_info['errors'].append("Please make sure you specify "
                                            "Title, Question Content and "
                                            "at least one tag to continue.")
-        elif req.hide_q:
+        elif req.hide_q and auth_user.is_admin():
             # Question is set to be "hidden" from public view,
             # this includes the question itself, the question's comments,
             # every question's answers and every question's answers'
@@ -1130,6 +1130,7 @@ def edit_answer():
     - By the Answer owner
     Answers may not be edited (SysAdmin except):
     - If te answer is marked as "answered" by the question originator/SysAdmin
+    Answers can be hidden only by the sysadmin
     
     """
     req = request.vars
@@ -1139,17 +1140,35 @@ def edit_answer():
     redir = False # Flag to trigger redirection back to View Question page
     if req.form_submitted:
         aid = req.aid
-        description = req.description.strip()
-        if description:
-            # All seems fine, update
-            db(db.answers.id==aid).update(description=description,
-                                          modified_by=auth_user_id,
-                                          modified_on=request.now)
-            # Then get out of here
-            redir = True
-        else:
-            view_info['errors'].append("Please make sure you specify "
-                                       "a valid content for your answer.")
+        if req.update_answer:
+            description = req.description.strip()
+            if description:
+                # All seems fine, update
+                db(db.answers.id==aid).update(description=description,
+                                              modified_by=auth_user_id,
+                                              modified_on=request.now)
+                # Then get out of here
+                redir = True
+            else:
+                view_info['errors'].append("Please make sure you specify "
+                                           "a valid content for your answer.")
+        elif req.hide_a and auth_user.is_admin():
+            # Answer is set to be "hidden" from public view,
+            # this includes the answer itself, the answer's comments if any.
+            # if the answer is marked as "answered", remove the flag also
+            
+            # Hide the answer and remove the answered flag
+            db(db.answers.id==aid).update(
+                is_visible=False,
+                is_answer=False)
+            # Hide the answer's comments
+            db((db.comments.c_type=='A') &\
+               (db.comments.qa_id==aid)).update(is_visible=False)
+            
+            qid = db(db.answers.id==aid).select(
+                db.answers.question_id)[0].question_id
+            # The question is not "visible" anymore, redirect to home
+            redirect(URL(r=request, c='default', f='view', args=[qid]))
     else:
         aid = request.args[0]
 
@@ -1196,17 +1215,26 @@ def edit_comment():
     if req.form_submitted:
         cid = req.cid
         qid = req.qid
-        description = req.description.strip()
-        if description:
-            # All seems fine, update
-            db(db.comments.id==cid).update(description=description,
-                                           modified_by=auth_user_id,
-                                           modified_on=request.now)
-            # Then get out of here
-            redir = True
-        else:
-            view_info['errors'].append("Please make sure you specify "
-                                       "a valid content for your comment.")
+        if req.update_comment:
+            description = req.description.strip()
+            if description:
+                # All seems fine, update
+                db(db.comments.id==cid).update(description=description,
+                                               modified_by=auth_user_id,
+                                               modified_on=request.now)
+                # Then get out of here
+                redir = True
+            else:
+                view_info['errors'].append("Please make sure you specify "
+                                           "a valid content for your comment.")
+        elif req.hide_c and auth_user.is_admin():
+            # Comment is set to be "hidden" from public view,
+            
+            # Hide the comment
+            db(db.comments.id==cid).update(is_visible=False)
+            
+            # Back to the view page
+            redirect(URL(r=request, c='default', f='view', args=[qid]))
     else:
         cid, qid = request.args
         

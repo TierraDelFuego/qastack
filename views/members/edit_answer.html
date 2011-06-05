@@ -86,6 +86,11 @@
             <input type="submit" id="update_answer name="answer_question" value="{{=XML(T('Update Answer'))}}"
                    onclick="return confirm('Please confirm you wish to edit this answer.');" />
             <input type="submit" id="cancel_edit" name="cancel_edit" value="{{=XML(T('Cancel'))}}" />
+            {{if auth_user.is_admin():}}
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                <input type="submit" id="hide_a" name="hide_a" value="Remove This Answer"
+                onclick="return confirm('WARNING: This answer and comments will be hidden from public view.\nIf this answer is marked as ANSWERED, the flag will also be removed\n\nPlease Confirm');" />
+            {{pass}}
         </div>
     
         <div class="paragraph">
