@@ -1010,6 +1010,7 @@ def edit_question():
     Questions may not be edited:
     - If the question has already be answered
     - Except by the SysAdmin
+    Questions can be made "hidden" by the sysadmin only
     
     """
     
@@ -1073,6 +1074,27 @@ def edit_question():
                 view_info['errors'].append("Please make sure you specify "
                                            "Title, Question Content and "
                                            "at least one tag to continue.")
+        elif req.hide_q:
+            # Question is set to be "hidden" from public view,
+            # this includes the question itself, the question's comments,
+            # every question's answers and every question's answers'
+            # comments, all points up/down votes etc remain the same
+            
+            # Hide the question
+            db(db.questions.id==qid).update(is_visible=False)
+            # Hide the answers
+            db(db.answers.question_id==qid).update(is_visible=False)
+            # Hide the comments of the question
+            db((db.comments.c_type=='Q') &\
+               (db.comments.qa_id==qid)).update(is_visible=False)
+            # Get all the answers for this question, and for each one
+            # of them, invalidate their respective comments
+            answers = db(db.answers.question_id==qid).select(db.questions.id)
+            for answer in answers:
+                db((db.comments.c_type=='A') &\
+                   (db.comments.qa_id==answer.id)).update(is_visible=False)
+            # The question is not "visible" anymore, redirect to home
+            redirect(URL(r=request, c='default', f='index'))
         else:
             redirect(URL(r=request, c='default', f='view', args=[qid]))
     else:
