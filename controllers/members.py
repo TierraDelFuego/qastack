@@ -1070,7 +1070,7 @@ def edit_question():
                         new_tag_ids.append(tag_id)
                 redirect(URL(r=request, c='default', f='view', args=[qid]))
             else:
-                wiew_info['errors'].append("Please make sure you specify "
+                view_info['errors'].append("Please make sure you specify "
                                            "Title, Question Content and "
                                            "at least one tag to continue.")
         else:
@@ -1126,7 +1126,7 @@ def edit_answer():
             # Then get out of here
             redir = True
         else:
-            wiew_info['errors'].append("Please make sure you specify "
+            view_info['errors'].append("Please make sure you specify "
                                        "a valid content for your answer.")
     else:
         aid = request.args[0]
@@ -1157,3 +1157,52 @@ def edit_answer():
                 view_info=view_info,
                 can_edit=can_edit)
 
+def edit_comment():
+    """ Comments can be edited:
+    - By the SysAdmin, regardless
+    - By the Comment owner
+    Comments can be edited by the above regardless if the question,
+    answer or comment has been marked as approved, declined, etc,
+    since comments do not provide anythint
+    
+    """
+    req = request.vars
+    view_info = {'errors': []}
+    auth_user_id = auth_user.get_user_id()
+    can_edit = False
+    redir = False # Flag to trigger redirection back to View Question page
+    if req.form_submitted:
+        cid = req.cid
+        qid = req.qid
+        description = req.description.strip()
+        if description:
+            # All seems fine, update
+            db(db.comments.id==cid).update(description=description,
+                                           modified_by=auth_user_id,
+                                           modified_on=request.now)
+            # Then get out of here
+            redir = True
+        else:
+            view_info['errors'].append("Please make sure you specify "
+                                       "a valid content for your comment.")
+    else:
+        cid, qid = request.args
+        
+    if redir:
+        redirect(URL(r=request, c='default', f='view', args=[qid]))
+    
+    comment = db(db.comments.id==cid).select(db.comments.ALL)[0]
+    
+    if auth_user.is_admin():
+        can_edit = True
+    else:
+        # No admin, can you still edit?
+        if comment.created_by == auth_user_id and\
+           comment.is_visible:
+            can_edit = True
+            
+    return dict(comment=comment,
+                view_info=view_info,
+                cid=cid,
+                qid=qid,
+                can_edit=can_edit)
