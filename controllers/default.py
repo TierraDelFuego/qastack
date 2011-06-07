@@ -234,6 +234,10 @@ def view():
                                   created_on=request.now,
                                   modified_by=modified_by,
                                   is_outstanding=False,
+                                  votes_up=0,
+                                  votes_dn=0,
+                                  is_visible=True,
+                                  is_answer=False,
                                   modified_on=request.now)
                 # Update the original question's last update date/user
                 db(db.questions.id==qid).update(modified_by=modified_by,

@@ -83,7 +83,7 @@
         </fieldset>
         
         <div class="paragraph-all">
-            <input type="submit" id="update_answer name="answer_question" value="{{=XML(T('Update Answer'))}}"
+            <input type="submit" id="update_answer" name="update_answer" value="{{=XML(T('Update Answer'))}}"
                    onclick="return confirm('Please confirm you wish to edit this answer.');" />
             <input type="submit" id="cancel_edit" name="cancel_edit" value="{{=XML(T('Cancel'))}}" />
             {{if auth_user.is_admin():}}

@@ -10,13 +10,13 @@
 
 <h2 class="fancy">Administrative Messages - Q&amp;A Management</h2>
 
-<p>The following shortcuts/reports are available:</p>
+<p>The following shortcuts are available:</p>
 
 <ul>
-    <li><a href="{{=URL(r=request, c='admin', f='qa_mgmt', args=['oq'])}}" title="">Offensive Questions (Invisible Questions)</a> (100)</li>
-    <li><a href="{{=URL(r=request, c='admin', f='qa_mgmt', args=['ocq'])}}" title="">Offensive Comments to Questions</a> (100)</li>
-    <li><a href="{{=URL(r=request, c='admin', f='qa_mgmt', args=['oa'])}}" title="">Offensive Answers</a> (100)</li>
-    <li><a href="{{=URL(r=request, c='admin', f='qa_mgmt', args=['oca'])}}" title="">Offensive Comments to Answers</a> (100)</li>
+    <li><a href="{{=URL(r=request, c='admin', f='qa_mgmt', args=['oq'])}}" title="">Hidden Questions</a> (100)</li>
+    <li><a href="{{=URL(r=request, c='admin', f='qa_mgmt', args=['ocq'])}}" title="">Hidden Comments on Questions</a> (100)</li>
+    <li><a href="{{=URL(r=request, c='admin', f='qa_mgmt', args=['oa'])}}" title="">Hidden Answers</a> (100)</li>
+    <li><a href="{{=URL(r=request, c='admin', f='qa_mgmt', args=['oca'])}}" title="">Hidden Comments to Answers</a> (100)</li>
 </ul>
 
 {{if request.args:}}

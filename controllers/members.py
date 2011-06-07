@@ -498,6 +498,9 @@ def comment_question():
                                        created_by=modified_by,
                                        created_on=request.now,
                                        modified_by=modified_by,
+                                       votes_up=0,
+                                       votes_dn=0,
+                                       is_visible=True,
                                        modified_on=request.now)
                     # Update the question's last update date/user
                     db(db.questions.id==qid).update(modified_by=modified_by,
@@ -657,7 +660,8 @@ def vote():
         can_log_points = user_id != object_info.created_by
         # If you do not want SysAdmins or Managers the ability
         # of up/down voting their own posts, comment the line below
-        can_log_posts = can_log_points or auth_user.has_role('Manager,SysAdmin')
+        # can_log_posts = can_log_points or\
+        # auth_user.has_role('Manager,SysAdmin')
 
         if can_log_points:
 
