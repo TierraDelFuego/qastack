@@ -1,5 +1,19 @@
 {{extend 'qastack_layout.html'}}
 
+<!--
+Named Anchors Specification:
+
+questionMain - Start of the question, top of page
+questionCommentsStart - Start of the comments section for the question
+answersMain - The start of the answers section
+answerXYZ - Each Answer with ID XYZ
+commentXYX - A specific anchor on a comment ID (comments are unique among questions and answers)
+//-->
+
+{{if not question.questions.is_visible:}}
+    <div class="error2">This Question is marked as HIDDEN - For Administration use Only</div>
+{{pass}}
+
 {{if view_info['errors']:}}
     <p class="err">{{=XML(T('There was one or more messages generated while processing your request, please review the following'))}}</p>
     <ul>
@@ -86,7 +100,7 @@
     title="{{=XML(T('Featured'))}}"
     style="float:left;margin:0;vertical-algin:middle;" />
 {{pass}}
-&nbsp;<a name="main">{{=question.questions.title}}</a></h2>
+&nbsp;<a name="questionMain">{{=question.questions.title}}</a></h2>
 
 <div class="paragraph-big">
     <table cellspacing="1" cellpadding="1" style="width:100%;margin-bottom:10px;">
@@ -166,7 +180,7 @@
         <table class="comment-table" cellspacing="0" cellpadding="0">
             <thead>
                 <tr>
-                    <th><div style="margin:5px 0 5px 0;"><b>{{=XML(T('Comments For Question'))}}</b></div></th>
+                    <th><div style="margin:5px 0 5px 0;"><b><a name="questionCommentsStart">{{=XML(T('Comments For Question'))}}</a></b></div></th>
                 </tr>
             </thead>
             <tbody>
@@ -192,7 +206,7 @@
                                 alt="{{=XML(T('Not enough Credits to downvote'))}}"
                                 title="{{=XML(T('Not enough Credits to downvote'))}}" />
                             {{pass}}
-                            <a name="comment_{{=comment.comments.id}}">{{=XML(T('By'))}}: {{=comment.member_properties.property_value}}
+                            <a name="comment{{=comment.comments.id}}">{{=XML(T('By'))}}: {{=comment.member_properties.property_value}}
                             ({{=stackhelper.get_user_role(comment.comments.modified_by)}})</a>,
                             {{=XML(T('Updated'))}}
                             {{=prettydate(comment.comments.modified_on, T)}},
@@ -214,7 +228,7 @@
 
 </div>
 
-<h2 class="fancy">{{=len(answers)}} {{=XML(T('Responses'))}}</h2>
+<h2 class="fancy"><a name="answersMain">{{=len(answers)}} {{=XML(T('Responses'))}}</a></h2>
 
 {{if answers:}}
     <table cellspacing="1" cellpadding="1" style="width:100%;margin-bottom:10px;">
@@ -278,7 +292,7 @@
                                     class="bold">Report as Offensive</a>
                                 {{pass}}
                             </div>
-                            <span class="explain"><a name="answer_{{=answer.answers.id}}">{{=XML(T('By'))}}: {{=answer.member_properties.property_value}}
+                            <span class="explain"><a name="answer{{=answer.answers.id}}">{{=XML(T('By'))}}: {{=answer.member_properties.property_value}}
                             ({{=stackhelper.get_user_role(answer.answers.modified_by)}}),
                             {{=prettydate(answer.answers.created_on)}}</a></span>
                             <div class="paragraph">
@@ -293,7 +307,7 @@
                             <table class="comment-table" cellspacing="0" cellpadding="0">
                                 <thead>
                                     <tr>
-                                        <th><div style="margin:5px 0 5px 0;"><b>{{=XML(T('Comments For Answer'))}}</b></div></th>
+                                        <th><div style="margin:5px 0 5px 0;"><b><a name="commentsAnswerStart">{{=XML(T('Comments For Answer'))}}</a></b></div></th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -317,7 +331,7 @@
                                                     alt="{{=XML(T('Not enough Credits to downvote'))}}"
                                                     title="{{=XML(T('Not enough Credits to downvote'))}}" />
                                                 {{pass}}
-                                                <a name="comment_{{=comment.comments.id}}">{{=XML(T('By'))}}: {{=comment.member_properties.property_value}}
+                                                <a name="comment{{=comment.comments.id}}">{{=XML(T('By'))}}: {{=comment.member_properties.property_value}}
                                                 ({{=stackhelper.get_user_role(comment.comments.modified_by)}})</a>,
                                                 {{=XML(T('Updated'))}}: {{=prettydate(comment.comments.modified_on, T)}},
                                                 {{=XML(T('Votes'))}}: {{=comment.comments.votes_up - comment.comments.votes_dn}}

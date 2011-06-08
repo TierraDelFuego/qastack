@@ -193,7 +193,14 @@ def view():
 
     req = request.vars
     qid = req.qid if req.qid is not None else request.args[0] # Question ID
+
+    # Read the question here to see if the user is allowed to access it
+    question = db(db.questions.id==qid).select(db.questions.ALL)   
     user_id = auth_user.get_user_id()
+    if not question or (
+        not question[0].is_visible and not auth_user.is_admin()):
+        # Only admins may see hidden questions..
+        redirect(URL(r=request, c='default', f='unauthorized'))
 
     featured_votes = db(
         (db.score_log.l_type=='Q') &
@@ -404,3 +411,6 @@ def contact_admin():
             redirect(URL(r=request, c='default', f='index'))
     else:
         return dict(request=request, view_info=view_info)
+    
+def unauthorized():
+    return dict()

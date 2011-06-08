@@ -570,7 +570,7 @@ def comment_answer():
                                  c='default',
                                  f='view',
                                  args=[qid],
-                                 anchor='answer_%s' % (aid)))
+                                 anchor='answer%s' % (aid)))
             else:
                 view_info['errors'].append('Please add a valid '
                                            'comment to continue')
@@ -625,7 +625,7 @@ def vote():
     #
     # User can upvote or downvote only once, they may revoke a previous upvote
     # or downvote.  Managers (and above) are not restricted
-    anchor = 'main'
+    anchor = 'questionMain'
     user_id = auth_user.get_user_id()
     qac_type, qac_id, up_dn, qid = request.args
     err = 0
@@ -640,19 +640,19 @@ def vote():
                 db.questions.votes_up,
                 db.questions.votes_dn,
                 db.questions.created_by)[0] # Must Exist
-            anchor = 'main'
+            anchor = 'questionMain'
         elif c_type == 'A': # Vote on an answer
             object_info = db(db.answers.id==qac_id).select(
                 db.answers.votes_up,
                 db.answers.votes_dn,
                 db.answers.created_by)[0] # Must Exist
-            anchor = 'answer_%s' % (qac_id)
+            anchor = 'answer%s' % (qac_id)
         else: # Vote on a comment
             object_info = db(db.comments.id==qac_id).select(
                 db.comments.votes_up,
                 db.comments.votes_dn,
                 db.comments.created_by)[0] # Must Exist
-            anchor = 'comment_%s' % (qac_id)
+            anchor = 'comment%s' % (qac_id)
 
         # Here we create a nifty little variable that will prevent the
         # user (any user) from awarding points to him/herself by

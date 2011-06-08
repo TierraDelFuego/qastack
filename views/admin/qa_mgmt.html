@@ -12,20 +12,29 @@
 
 <p>The following shortcuts are available:</p>
 
-<ul>
-    <li><a href="{{=URL(r=request, c='admin', f='qa_mgmt', args=['oq'])}}" title="">Hidden Questions</a> (100)</li>
-    <li><a href="{{=URL(r=request, c='admin', f='qa_mgmt', args=['ocq'])}}" title="">Hidden Comments on Questions</a> (100)</li>
-    <li><a href="{{=URL(r=request, c='admin', f='qa_mgmt', args=['oa'])}}" title="">Hidden Answers</a> (100)</li>
-    <li><a href="{{=URL(r=request, c='admin', f='qa_mgmt', args=['oca'])}}" title="">Hidden Comments to Answers</a> (100)</li>
-</ul>
-
-{{if request.args:}}
-    {{if request.args[0] == 'oq':}}
-        {{if payload:}}
-            <table cellspacing="0" cellpadding="0" class="ftable">
-            </table>
-        {{pass}}
-    {{else:}}
-        <p>not Implemented yet: {{=request.args[0]}}</p>
-    {{pass}}
-{{pass}}
+<table cellspacing="0" cellpadding="0" class="ftable">
+    <thead>
+        <tr class="shadedarker">
+            <th style="text-align:center;">Name</th>
+            <th>&nbsp;</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr class="shadedark">
+            <td><a href="{{=URL(r=request, c='admin', f='qa_mgmt_hq')}}" title="">Hidden Questions</a></td>
+            <td style="text-align:center;">{{=q_cnt}}</td>
+        </tr>
+        <tr>
+            <td><a href="{{=URL(r=request, c='admin', f='qa_mgmt_hqc')}}" title="">Hidden Comments on Questions</a></td>
+            <td style="text-align:center;">{{=qc_cnt}}</td>
+        </tr>
+        <tr>
+            <td><a href="{{=URL(r=request, c='admin', f='qa_mgmt_ha')}}" title="">Hidden Answers</a></td>
+            <td style="text-align:center;">{{=a_cnt}}</td>
+        </tr>
+        <tr>
+            <td><a href="{{=URL(r=request, c='admin', f='qa_mgmt_hac')}}" title="">Hidden Comments to Answers</a></td>
+            <td style="text-align:center;">{{=ac_cnt}}</td>
+        </tr>
+    </tbody>
+</table>

@@ -460,6 +460,15 @@ div.answered {
     color:red;
 }
 
+div.error2 {
+    background-color:red;
+    color:yellow;
+    font-weight:bold;
+    border:1px solid black;
+    padding:3px;
+    text-align:center;
+}
+
 .disabled-bold {
     font-weight:bold;
     color:#808080;

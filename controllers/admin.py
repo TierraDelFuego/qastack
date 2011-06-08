@@ -289,15 +289,20 @@ def view_admin_message():
     db(db.admin_messages.id==request.args[0]).update(read_flag=True)
     return dict(message=message)
 
+
 @auth_user.requires_role('SysAdmin')
 def qa_mgmt():
-    # Get the counts for the different types of "problematic" questions
-    # and answers.
-    payload = []
-    args = request.args
-    if args:
-        if args[0] == 'oq':
-            # Grab all questions that are offensive
-            payload = 1
-    
-    return dict(payload=payload)
+    q_cnt = db(db.questions.is_visible==False).count()
+    qc_cnt = db((db.comments.c_type=='Q') & (
+        db.comments.is_visible==False)).count()
+    a_cnt = db(db.answers.is_visible==False).count()
+    ac_cnt = db((db.comments.c_type=='A') & (
+        db.comments.is_visible==False)).count()
+    return dict(q_cnt=q_cnt, qc_cnt=qc_cnt, a_cnt=a_cnt, ac_cnt=ac_cnt)
+
+
+@auth_user.requires_role('SysAdmin')
+def qa_mgmt_hq():
+    questions = db(db.questions.is_visible==False).select(
+        db.questions.ALL, orderby=~db.questions.modified_on)
+    return dict(questions=questions)
