@@ -29,7 +29,7 @@ a.bold:hover {
     font-weight:bold;
 }
 
-a.nolink {
+a.nolink:active, a.nolink:link, a.nolink:hover {
     text-decoration:none;
     background-color:transparent;
 }

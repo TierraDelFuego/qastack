@@ -306,3 +306,25 @@ def qa_mgmt_hq():
     questions = db(db.questions.is_visible==False).select(
         db.questions.ALL, orderby=~db.questions.modified_on)
     return dict(questions=questions)
+
+@auth_user.requires_role('SysAdmin')
+def qa_mgmt_actions():
+    """ This really should be a "helper" method for a module instead
+    of a controller method, ask Massimo what would be the _preferred_
+    way of doing things here, since this only executes "stuff" and redirects
+    back to the calling page.
+    
+    """
+    # "action", "action_type" and "question" are always provided as "vars"
+    req = request.vars
+    action = req.action
+    action_type = req.action_type
+    question = req.question
+    
+    # Request restore of a hidden question:
+    if action == 'release' and action_type == 'question':
+        # Here basically change the flag of the question, all of the
+        # other question's siblings (comments, answers, and answers
+        # to comments should become visible as well
+        db(db.questions.id==question).update(is_visible=True)
+    redirect(URL(r=request, c='admin', f='qa_mgmt_hq'))

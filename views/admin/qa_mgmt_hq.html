@@ -20,6 +20,8 @@ commentXYX - A specific anchor on a comment ID (comments are unique among questi
 
 <h2 class="fancy">Administrative Messages - Q&amp;A Management - Hidden Questions</h2>
 
+<p><a href="{{=URL(r=request, c='admin', f='qa_mgmt')}}" title="">&lt;&lt; Back</a></p>
+
 {{if questions:}}
     <table cellspacing="0" cellpadding="0" class="ftable">
         <thead>
@@ -45,12 +47,20 @@ commentXYX - A specific anchor on a comment ID (comments are unique among questi
                         title="">{{=stackhelper.get_member_property('m_display_name', q.created_by, q.created_by)}}</a>
                     </td>
                     <td>
-                        <img src="{{=URL(r=request, c='static/images/small', f='checkmark.png')}}"
+                        <a href="{{=URL(r=request, c='admin', f='qa_mgmt_actions', vars=dict(action='release', action_type='question', question=q.id))}}"
+                           title="Make it publicly available"
+                           onclick="return confirm('This question and any dependencies (answers/comments) will become visible.\n\nPlease Confirm');"
+                           class="nolink"
+                        ><img src="{{=URL(r=request, c='static/images/small', f='checkmark.png')}}"
                             alt="Restore"
-                            style="vertical-align:middle;" />
-                        <img src="{{=URL(r=request, c='static/images/small', f='x.png')}}"
+                            style="vertical-align:middle;" /></a>
+                        <a href="{{=URL(r=request, c='admin', f='qa_mgmt_actions', vars=dict(action='remove', action_type='question', question=q.id))}}"
+                           title="Remove from the system"
+                           onclick="return confirm('This question and any dependancies (answers/comments) will be removed permanently from the system.\n\nPlease Confirm');"
+                           class="nolink"
+                        ><img src="{{=URL(r=request, c='static/images/small', f='x.png')}}"
                             alt="Remove Permanently"
-                            style="vertical-align:middle;" />
+                            style="vertical-align:middle;" /></a>
                     </td>
                 </tr>
             {{pass}}
