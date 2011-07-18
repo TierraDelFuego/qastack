@@ -1,6 +1,26 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+# IDE "helper" not part of the framework
+if False:
+    from gluon.globals import *
+    from gluon.html import *
+    from gluon.http import *
+    #from gluon.sqlhtml import SQLFORM, SQLTABLE, form_factory
+    session = Session()
+    request = Request()
+    response = Response()
+    # The following three lines are application-specific and used just so
+    # komodo (edit) (or even other IDEs sich as Wing) "finds" the methods
+    # for my classes, this does not have anyhing to do with the web2py
+    # framework itself, as I am already instantiating "auth_user",
+    # "stackhelper" etc in one of my models...
+    from qastack.models import db
+    from qastack.modules.CustomAuthentication import CustomAuthentication \
+        as auth_user
+    from qastack.modules.QAStackHelper import QAStackHelper as stackhelper
+
+
 @auth_user.requires_role('SysAdmin')
 def index():
     req = request.vars # /admin/function?tag=value
@@ -292,6 +312,10 @@ def view_admin_message():
 
 @auth_user.requires_role('SysAdmin')
 def qa_mgmt():
+    """ Main page to control question/answer/comment management, usually
+    to manage any of those that have been flagged for deletion.
+    
+    """
     q_cnt = db(db.questions.is_visible==False).count()
     qc_cnt = db((db.comments.c_type=='Q') & (
         db.comments.is_visible==False)).count()
@@ -303,9 +327,29 @@ def qa_mgmt():
 
 @auth_user.requires_role('SysAdmin')
 def qa_mgmt_hq():
+    """ Management of question that have been marked for possible deletion
+    by a sysadmin.
+    
+    """
     questions = db(db.questions.is_visible==False).select(
         db.questions.ALL, orderby=~db.questions.modified_on)
     return dict(questions=questions)
+
+
+@auth_user.requires_role('SysAdmin')
+def qa_mgmt_hqc():
+    """ Management of commments for a question that have been marked for
+    possible deletion by a sysadmin.
+    
+    """    
+    questions = db(
+        (db.questions.id==db.comments.qa_id) & (db.comments.c_type=='Q') & (
+            db.comments.is_visible==False)).select(
+        db.comments.qa_id, db.comments.description, db.comments.id,
+        db.questions.id, db.questions.title, db.comments.modified_on,
+        orderby=~db.comments.modified_on)
+    return dict(questions=questions)
+
 
 @auth_user.requires_role('SysAdmin')
 def qa_mgmt_actions():
@@ -327,4 +371,38 @@ def qa_mgmt_actions():
         # other question's siblings (comments, answers, and answers
         # to comments should become visible as well
         db(db.questions.id==question).update(is_visible=True)
+    elif action == 'remove' and action_type == 'question':
+        # This is a little bit more "complex" so to speak, the following
+        # rules will apply:
+        # Question is deleted.
+        # Comments on the actual question, as well as answers and comments
+        # on these answers are also removed.
+        # Points awarded, etc remain.
+        
+        # 1. Remove all comments for this question
+        db((db.comments.c_type=='Q') & (db.comments.qa_id==question)).delete()
+        
+        # 2. Get all the possible answers for this question
+        answers = db(db.answers.question_id==question).select(db.answers.id)
+        
+        # 3. for each answer, remove all its comments and the answer itself
+        if answers:
+            # Store all of our answer_ids
+            a_ids = [answer.id for answer in answers]
+            # Remove any comments for any of the answer ids stored above
+            db((db.comments.c_type=='A') & (
+                db.comments.qa_id.belongs(tuple(a_ids)))).delete()
+            # Remove all the answers for this question
+            db(db.answers.question_id==question).delete()
+            
+        # 4. Remove the actual question.
+        db(db.questions.id==question).delete()
+        
+        # 5. Clean up stub tables:
+        # Remove the references of this question from the subscriptions
+        # table in case some members have this question marked
+        db(db.question_subscriptions.question_id==question).delete()
+        # Remove the tags associated with this question
+        db(db.question_tags.question_id==question).delete()
     redirect(URL(r=request, c='admin', f='qa_mgmt_hq'))
+    

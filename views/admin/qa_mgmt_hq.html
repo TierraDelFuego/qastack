@@ -56,7 +56,7 @@ commentXYX - A specific anchor on a comment ID (comments are unique among questi
                             style="vertical-align:middle;" /></a>
                         <a href="{{=URL(r=request, c='admin', f='qa_mgmt_actions', vars=dict(action='remove', action_type='question', question=q.id))}}"
                            title="Remove from the system"
-                           onclick="return confirm('This question and any dependancies (answers/comments) will be removed permanently from the system.\n\nPlease Confirm');"
+                           onclick="return confirm('This question and any dependancies (answers/comments) will be permanently removed from the system.\n\nPlease Confirm');"
                            class="nolink"
                         ><img src="{{=URL(r=request, c='static/images/small', f='x.png')}}"
                             alt="Remove Permanently"

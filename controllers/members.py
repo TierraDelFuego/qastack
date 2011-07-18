@@ -1086,17 +1086,20 @@ def edit_question():
             
             # Hide the question
             db(db.questions.id==qid).update(is_visible=False)
-            # Hide the answers
-            db(db.answers.question_id==qid).update(is_visible=False)
-            # Hide the comments of the question
-            db((db.comments.c_type=='Q') &\
-               (db.comments.qa_id==qid)).update(is_visible=False)
-            # Get all the answers for this question, and for each one
-            # of them, invalidate their respective comments
-            answers = db(db.answers.question_id==qid).select(db.questions.id)
-            for answer in answers:
-                db((db.comments.c_type=='A') &\
-                   (db.comments.qa_id==answer.id)).update(is_visible=False)
+            # The following will be temporarily disabled, as removing the
+            # Question from public view will effectively hide the comments,
+            # answers and comments on answers for this question,
+            ## Hide the answers
+            #db(db.answers.question_id==qid).update(is_visible=False)
+            ## Hide the comments of the question
+            #db((db.comments.c_type=='Q') &\
+            #   (db.comments.qa_id==qid)).update(is_visible=False)
+            ## Get all the answers for this question, and for each one
+            ## of them, invalidate their respective comments
+            #answers = db(db.answers.question_id==qid).select(db.questions.id)
+            #for answer in answers:
+            #    db((db.comments.c_type=='A') &\
+            #       (db.comments.qa_id==answer.id)).update(is_visible=False)
             # The question is not "visible" anymore, redirect to home
             redirect(URL(r=request, c='default', f='index'))
         else:
