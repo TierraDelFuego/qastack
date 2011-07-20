@@ -327,7 +327,7 @@ def qa_mgmt():
 
 @auth_user.requires_role('SysAdmin')
 def qa_mgmt_hq():
-    """ Management of question that have been marked for possible deletion
+    """ Management of questions that have been marked for possible deletion
     by a sysadmin.
     
     """
@@ -352,6 +352,35 @@ def qa_mgmt_hqc():
 
 
 @auth_user.requires_role('SysAdmin')
+def qa_mgmt_ha():
+    """ Management of answers that have been marked for possible deletion
+    by a sysadmin.
+    
+    """
+    answers = db((db.questions.id==db.answers.question_id) & (
+        db.answers.is_visible==False)).select(
+        db.questions.id, db.questions.title, db.answers.description,
+        db.answers.id, db.answers.modified_on)
+    return dict(answers=answers)
+    
+
+@auth_user.requires_role('SysAdmin')
+def qa_mgmt_hac():
+    """ Management of commments for an answer that have been marked for
+    possible deletion by a sysadmin.
+    
+    """
+    questions = db((db.comments.is_visible==False) & (
+        db.comments.c_type=='A') & (db.comments.qa_id==db.answers.id) & (
+        db.answers.question_id==db.questions.id)).select(
+        db.comments.description, db.comments.id, db.comments.modified_on,
+        db.questions.id, db.questions.title,
+        db.answers.description, db.answers.id,
+        orderby=~db.comments.modified_on)
+    return dict(questions=questions)
+    
+
+@auth_user.requires_role('SysAdmin')
 def qa_mgmt_actions():
     """ This really should be a "helper" method for a module instead
     of a controller method, ask Massimo what would be the _preferred_
@@ -371,6 +400,7 @@ def qa_mgmt_actions():
         # other question's siblings (comments, answers, and answers
         # to comments should become visible as well
         db(db.questions.id==question).update(is_visible=True)
+        redirect(URL(r=request, c='admin', f='qa_mgmt_hq'))
     elif action == 'remove' and action_type == 'question':
         # This is a little bit more "complex" so to speak, the following
         # rules will apply:
@@ -404,5 +434,28 @@ def qa_mgmt_actions():
         db(db.question_subscriptions.question_id==question).delete()
         # Remove the tags associated with this question
         db(db.question_tags.question_id==question).delete()
-    redirect(URL(r=request, c='admin', f='qa_mgmt_hq'))
+        redirect(URL(r=request, c='admin', f='qa_mgmt_hq'))
+    elif action == 'release' and action_type == 'answer':
+        # Another easy one, just change the flag of the answer's
+        answer = req.answer
+        db(db.answers.id==answer).update(is_visible=True)
+        redirect(URL(r=request, c='admin', f='qa_mgmt_ha'))
+    elif action == 'remove' and action_type == 'answer':
+        # In this case, I need to remove this answer's comments and the
+        # answer itself
+        answer = req.answer
+        db((db.comments.c_type=='A') % (db.comments.qa_id==answer)).delete()
+        db(db.answers.id==answer).delete()
+        redirect(URL(r=request, c='admin', f='qa_mgmt_ha'))
+    elif action == 'release' and action_type == 'comment':
+        # In this case we just need to make this comment visible, since we
+        # have the comment.id it should be pretty straightforward
+        db(db.comments.id==req.comment).update(is_visible=True)
+        redirect(URL(r=request, c='admin', f='qa_mgmt'))
+    elif action == 'remove' and action_type == 'comment':
+        # Also easy, remove the comment
+        db(db.comments.id==req.comment).delete()
+        redirect(URL(r=request, c='admin', f='qa_mgmt'))
+    else:
+        redirect(URL(r=request, c='admin', f='qa_mgmt', vars=dict(invalid_selection=True)))
     

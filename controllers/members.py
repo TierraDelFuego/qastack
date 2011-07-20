@@ -1169,9 +1169,12 @@ def edit_answer():
                 is_visible=False,
                 is_answer=False)
             # Hide the answer's comments
-            db((db.comments.c_type=='A') &\
-               (db.comments.qa_id==aid)).update(is_visible=False)
+            # NOTE, This has been disabled, if an answer is disabled,
+            # all of its comments will also be implicitly hidden as well.
+            #db((db.comments.c_type=='A') &\
+            #   (db.comments.qa_id==aid)).update(is_visible=False)
             
+            # Get the question ID to redirect later..
             qid = db(db.answers.id==aid).select(
                 db.answers.question_id)[0].question_id
             # The question is not "visible" anymore, redirect to home

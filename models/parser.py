@@ -4,6 +4,9 @@
 
 import sgmllib
 import re
+import sys
+
+IS_PYGMENTS = True
 
 # TODO: Need to deal with ImportErrors in a more elegant manner
 try:
@@ -16,7 +19,8 @@ try:
     from pygments.lexers import PhpLexer
     from pygments.formatters import HtmlFormatter
 except ImportError:
-    pass
+    IS_PYGMENTS = False
+    raise ValueError(sys.path)
 
 class StrippingParser(sgmllib.SGMLParser):
     # These are the HTML tags that we will leave intact
@@ -75,20 +79,23 @@ class StrippingParser(sgmllib.SGMLParser):
        
         
 def handle_pygments(pat, content, pygments_lexer):
-    data = pat.search(content)
-    while data:
-        code_found = highlight(data.group(2), pygments_lexer(),
-                               HtmlFormatter(noclasses=True));
-        # This is needed to the global conversion to '<br />'s later on applies
-        # to highlighted code as well.
-        code_found = code_found.replace('<br />', '\n')
-        if code_found.startswith('\n'):
-            code_found = code_found[1:]
-        if code_found.endswith('\n'):
-            code_found = code_found[:-1]
-            
-        content = content[:data.start(0)] + code_found + content[data.end(0):]
+    if IS_PYGMENTS:
         data = pat.search(content)
+        while data:
+            code_found = highlight(data.group(2), pygments_lexer(),
+                                   HtmlFormatter(noclasses=True));
+            # This is needed to the global conversion to '<br />'s later on applies
+            # to highlighted code as well.
+            code_found = code_found.replace('<br />', '\n')
+            if code_found.startswith('\n'):
+                code_found = code_found[1:]
+            if code_found.endswith('\n'):
+                code_found = code_found[:-1]
+                
+            content = content[:data.start(0)] + code_found + content[data.end(0):]
+            data = pat.search(content)
+    else:
+        content = '[PYGMENTS_ERROR] - %s' % content
     return content
     
 def parse_content(content, mode="removeall"):

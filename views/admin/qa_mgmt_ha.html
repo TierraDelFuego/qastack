@@ -8,44 +8,44 @@
 
 </script>
 
-<h2 class="fancy">Administrative Messages - Q&amp;A Management - Hidden Comments for Questions</h2>
+<h2 class="fancy">Administrative Messages - Q&amp;A Management - Hidden Answers</h2>
 
 <p><a href="{{=URL(r=request, c='admin', f='qa_mgmt')}}" title="">&lt;&lt; Back</a></p>
 
-{{if questions:}}
+{{if answers:}}
     <table cellspacing="0" cellpadding="0" class="ftable">
         <thead>
             <tr class="shadedarker">
                 <th>&nbsp;</th>
-                <th>Question Title</th>
-                <th>Comment</th>
-                <th>Comment Date</th>
+                <th>Question</th>
+                <th>Answer</th>
+                <th>Date</th>
                 <th>Actions</th>
             </tr>
         </thead>
         <tbody>
-            {{for idx,q in enumerate(questions):}}
+            {{for idx,a in enumerate(answers):}}
                 <tr class="{{if idx%2:}}shadedark{{else:}}shadelight{{pass}}">
                     <td style="text-align:center;">{{=idx+1}}</td>
                     <td>
-                        <a href="{{=URL(r=request, c='default', f='view', args=[q.questions.id])}}"
-                        title="">{{=q.questions.title}}</a>
+                        <a href="{{=URL(r=request, c='default', f='view', args=[a.questions.id])}}"
+                        title="">{{=a.questions.title}}</a>
                     </td>
                     <td>
-                        {{=XML(parse_content(q.comments.description))}}
+                        {{=XML(parse_content(a.answers.description))}}
                     </td>
-                    <td>{{=q.comments.modified_on.strftime('%c')}}</td>
+                    <td>{{=a.answers.modified_on.strftime('%c')}}</td>
                     <td>
-                        <a href="{{=URL(r=request, c='admin', f='qa_mgmt_actions', vars=dict(action='release', action_type='comment', question=q.questions.id, comment=q.comments.id))}}"
+                        <a href="{{=URL(r=request, c='admin', f='qa_mgmt_actions', vars=dict(action='release', action_type='answer', question=a.questions.id, answer=a.answers.id))}}"
                            title="Make it publicly available"
-                           onclick="return confirm('This comment will become visible.\n\nPlease Confirm');"
+                           onclick="return confirm('This answer and any dependencies (comments) will become visible.\n\nPlease Confirm');"
                            class="nolink"
                         ><img src="{{=URL(r=request, c='static/images/small', f='checkmark.png')}}"
                             alt="Restore"
                             style="vertical-align:middle;" /></a>
-                        <a href="{{=URL(r=request, c='admin', f='qa_mgmt_actions', vars=dict(action='remove', action_type='comment', question=q.questions.id, comment=q.comments.id))}}"
+                        <a href="{{=URL(r=request, c='admin', f='qa_mgmt_actions', vars=dict(action='remove', action_type='answer', question=a.questions.id, answer=a.answers.id))}}"
                            title="Remove from the system"
-                           onclick="return confirm('This comment will be permanently removed from the system.\n\nPlease Confirm');"
+                           onclick="return confirm('This answer and any dependencies (comments) will be permanently removed from the system.\n\nPlease Confirm');"
                            class="nolink"
                         ><img src="{{=URL(r=request, c='static/images/small', f='x.png')}}"
                             alt="Remove Permanently"
@@ -56,5 +56,5 @@
         </tbody>
     </table>
 {{else:}}
-    <p>No hidden comments found.</p>
+    <p>No hidden questions found.</p>
 {{pass}}

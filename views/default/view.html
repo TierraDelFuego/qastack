@@ -295,7 +295,7 @@ commentXYX - A specific anchor on a comment ID (comments are unique among questi
                             <span class="explain"><a name="answer{{=answer.answers.id}}">{{=XML(T('By'))}}: {{=answer.member_properties.property_value}}
                             ({{=stackhelper.get_user_role(answer.answers.modified_by)}}),
                             {{=prettydate(answer.answers.created_on)}}</a></span>
-                            <div class="paragraph">
+                            <div class="paragraph"><!-- pygmentize //-->
                                 {{=XML(parse_content(answer.answers.description))}}
                             </div>
                         </div>
