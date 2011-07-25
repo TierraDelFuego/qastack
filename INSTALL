@@ -1,65 +1,15 @@
 QA-Stack INSTALLATION NOTES
 ===========================
 
-There are sevaral "default" values to add to the application tables before
-you can complete installaton.
+1. Copy the latest code to the location of your choosing.
+2. Edit "qastack/models/db.py and point the database location to your database.
+   Make sure your database/users/permissions are properly set-up
+3. Access the main /qastack/default/index page.
+4. It is very important to write-down the initial user's credentials, so you
+   can log in as that user and perform administrative tasks.
+   
+For community help and information, please log in to the qa-stack forums
+located at:
 
-After you install and run the application for the first time,
-you need to add several rows to allow proper operation, you will need
-to do this probably once and any subsequent updates may not require this.
-
-Please execute line by line, or save the following commands in a ".sql"
-file and "import" them into your RDBMS:
-
-insert into auth_roles (id, role_name, role_min_score) values (NULL, 'Member', 0);
-insert into auth_roles (id, role_name, role_min_score) values (NULL, 'Contributor', 11);
-insert into auth_roles (id, role_name, role_min_score) values (NULL, 'Reviewer', 51);
-insert into auth_roles (id, role_name, role_min_score) values (NULL, 'TeamLead', 101);
-insert into auth_roles (id, role_name, role_min_score) values (NULL, 'Manager', 501);
-insert into auth_roles (id, role_name, role_min_score) values (NULL, 'SysAdmin', 1001);
-
-insert into member_properties_skel (property_name, property_desc, member_editable, sort_order) values ('m_last_login', 'Last Login', False, 0);
-insert into member_properties_skel (property_name, property_desc, member_editable, sort_order) values ('m_display_name', 'Display name to use for questions, answers, etc, if blank, will default to auth', False, 0);
-insert into member_properties_skel (property_name, property_desc, member_editable, sort_order) values ('m_last_login_ip', 'Last Login IP', False, 0);
-insert into member_properties_skel (property_name, property_desc, member_editable, sort_order) values ('m_questions', 'Number of Questions', False, 0);
-insert into member_properties_skel (property_name, property_desc, member_editable, sort_order) values ('m_answers', 'Number of Answers Posted', False, 0);
-insert into member_properties_skel (property_name, property_desc, member_editable, sort_order) values ('m_comments', 'Number of Comments Posted', False, 0);
-insert into member_properties_skel (property_name, property_desc, member_editable, sort_order) values ('m_locale', 'Language for display', True, 0);
-insert into member_properties_skel (property_name, property_desc, member_editable, sort_order) values ('m_web_page', 'Member URL', True, 0);
-insert into member_properties_skel (property_name, property_desc, member_editable, sort_order) values ('m_country', 'Member City/Country', True, 0);
-insert into member_properties_skel (property_name, property_desc, member_editable, sort_order) values ('m_join_date', 'Join Date', False, 0);
-insert into member_properties_skel (property_name, property_desc, member_editable, sort_order) values ('m_real_name', 'Member Full Name', True, 0);
-insert into member_properties_skel (property_name, property_desc, member_editable, sort_order) values ('m_email', 'Member Secondary Email Address', True, 0);
-insert into member_properties_skel (property_name, property_desc, member_editable, sort_order) values ('m_points_up', 'Actual Number of Points Awarded', False, 0);
-insert into member_properties_skel (property_name, property_desc, member_editable, sort_order) values ('m_points_dn', 'Actual Number of Points Removed', False, 0);
-
-insert into system_properties (property_name, property_desc, property_value) values ('s_questions_per_page', 'Questions per Page: Number of results per page to show in any page that displays a list of questions', '30');
-insert into system_properties (property_name, property_desc, property_value) values ('s_answers_per_page', 'Answers per Page: Number of answers per page to show in the question display section', '20');
-insert into system_properties (property_name, property_desc, property_value) values ('s_comments_per_page', 'Comments per Page: Number of results per page to show for each question or answer', '10');
-insert into system_properties (property_name, property_desc, property_value) values ('s_allow_member_avatars', 'Allow Avatars: If empty, users will not be given the choice of adding or change their avatars, any other value will enable avatars for all registered users in the system', 'True');
-insert into system_properties (property_name, property_desc, property_value) values ('s_system_language', 'System Language: Selects the default system language, if invalid it will default to English (US)', 'en');
-insert into system_properties (property_name, property_desc, property_value) values ('s_admin_contact_email', 'Admin Contact: (Important) - The system uses this value to specify the *From* email header for any email that is sent out, please use a valid email address that your domain will recognize, otherwise your system may not send emails at all', '');
-insert into system_properties (property_name, property_desc, property_value) values ('s_mailserver', 'Mail Server: The mail server to use when sending out emails', 'localhost');
-insert into system_properties (property_name, property_desc, property_value) values ('s_mailserver_username', 'Mail Server: The username to use if authenticating against a mail server', '');
-insert into system_properties (property_name, property_desc, property_value) values ('s_mailserver_passwd', 'Mail Server:  The password to use if authenticating against a mail server', '');
-insert into system_properties (property_name, property_desc, property_value) values ('s_info_html', 'Informational HTML: This can contain html code and will be shown at the topmost position in the navigaton section', 'Welcome to QA-Stack');
-
-insert into available_languages (language_code, language_desc, enabled) values ('de-de', 'Deutsch (Germany)', 'T');
-
--- SAMPLES ** SAMPLES ** SAMPLES ** SAMPLES ** SAMPLES ** SAMPLES ** SAMPLES
-
--- Sample Tags
-insert into tags values (null, 'web2py', 'T');
-insert into tags values (null, 'django', 'T');
-insert into tags values (null, 'qa-stack', 'T');
-
--- Sample Question
-insert into questions values (null, 'Is this the first post?', 'I just wanted to see if this is the first post!', 3, now(), 3, now(), 5, 3, 0, 'F', 'F', 'F', 'T', 1);
-insert into questions values (null, 'Is there an online API for the DAL in web2py', 'I\'ve been looking for it for quite some time', 3, now(), 3, now(), 1, 0, 0, 'F', 'F', 'F', 'T', 2);
-
-insert into question_tags values (null, 1, 1);
-insert into question_tags values (null, 1, 3);
-insert into question_tags values (null, 2, 2);
-
-In Addition, please add the needed indexes to speed up database operations.
+http://forum.qa-stack.com/
 
