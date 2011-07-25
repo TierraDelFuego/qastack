@@ -307,9 +307,12 @@ class QAStackHelper(object):
         return sent
 
     def gen_pwd(self):
-        vowels='aeiou'
-        consonants='bcdfghjklmnpqrstvwxyz'
-        password=''
+        # Generates a relatively easy to remember "password" which should
+        # NOT be used as the main one, usually for temporarily password
+        # assignments.
+        vowels = 'aeiou'
+        consonants = 'bcdfghjklmnpqrstvwxyz'
+        password = ''
         # Some default values should be in the parameters section
         minpairs = 4
         maxpairs = 6

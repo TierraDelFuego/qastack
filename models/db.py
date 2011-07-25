@@ -1,9 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import sys, os
+import hashlib
 
 from gluon.tools import *
+from QAStackHelper import QAStackHelper
 
 # Control Migrations
 migrate = False
@@ -11,35 +12,15 @@ migrate = False
 db = DAL('sqlite://qastack.sqlite')
 #db = DAL('mysql://web2py:py2web@ds9.virtual:3306/qastack')
 
-# Adds our "modules" folder to our search path
-path = os.path.join(request.folder, 'modules')
-if not path in sys.path:
-    sys.path.append(path)
-
 # Import Authentication/Authorization
 from CustomAuthentication import CustomAuthentication
 # Misc Methods QA-Stack-Specific
 from QAStackHelper import QAStackHelper
+
 auth_user = CustomAuthentication(globals(), db)
 stackhelper = QAStackHelper(globals(), db, auth_user)
 service = Service(globals()) # for json, xml, jsonrpc, xmlrpc, amfrpc
 
-#########################################################################
-## Define your tables below, for example
-##
-## >>> db.define_table('mytable',Field('myfield','string'))
-##
-## Fields can be 'string','text','password','integer','double','boolean'
-##       'date','time','datetime','blob','upload', 'reference TABLENAME'
-## There is an implicit 'id integer autoincrement' field
-## Consult manual for more options, validators, etc.
-##
-## More API examples for controllers:
-##
-## >>> db.mytable.insert(myfield='value')
-## >>> rows=db(db.mytable.myfield=='value').select(db.mytable.ALL)
-## >>> for row in rows: print row.id, row.myfield
-#########################################################################
 ## Authentication Schema (2 tables)
 db.define_table('auth_roles',
     Field('role_name', 'string', length=128, required=True),
@@ -178,3 +159,141 @@ db.define_table('admin_messages',
     Field('creation_date', 'datetime', required=True),
     Field('read_flag', 'boolean', default=False, required=True),
     migrate=migrate)
+
+# This code sets up some defaults if the system is installed
+# for the first time on a new instance.
+if not db.system_properties.id.count():
+    system_list = []
+    system_list.append({property_name: 's_questions_per_page',
+                        property_desc: 'Number of results to show on '
+                        'a single page',
+                        'property_value': '15'})
+    system_list.append({property_name: 's_answers_per_page',
+                        property_desc: 'Number of answers to display on a '
+                        'single page for a question',
+                        'property_value': '15'})
+    system_list.append({property_name: 's_comments_per_page',
+                        property_desc: 'Number of comments to display for '
+                        'every answer',
+                        'property_value': '15'})
+    system_list.append({property_name: 's_allow_member_avatars',
+                        property_desc: 'If empty, users will not be given '
+                        'the choice of adding or change their avatars, any '
+                        'other value will enable avatars for all registered '
+                        'users in the system',
+                        'property_value': 'yes'})
+    system_list.append({property_name: 's_system_language',
+                        property_desc: 'Sets the default system language, '
+                        'if invalid it will default to English (US)',
+                        'property_value': 'en'})
+    system_list.append({property_name: 's_info_html',
+                        property_desc: 'Informational HTML: This can contain '
+                        'html code and will be shown at the top most position '
+                        'in the navigaton section',
+                        'property_value': 'Welcome to QA-Stack!'})
+    db.system_properties.bulk_insert(system_list)
+
+if not db.auth_roles.id.count():
+    role_list = []
+    role_list.append({'role_name': 'Member',
+                      'role_min_score': '0',
+                      'color_designation': 'FFFFFF'})
+    role_list.append({'role_name': 'Contributor',
+                      'role_min_score': '11',
+                      'color_designation': 'B6D7A8'})
+    role_list.append({'role_name': 'Reviewer',
+                      'role_min_score': '51',
+                      'color_designation': 'FFE599'})
+    role_list.append({'role_name': 'TeamLead',
+                      'role_min_score': '101',
+                      'color_designation': '9FC5E8'})
+    role_list.append({'role_name': 'Manager',
+                      'role_min_score': '501',
+                      'color_designation': 'C27BA0'})
+    role_list.append({'role_name': 'SysAdmin',
+                      'role_min_score': '10001',
+                      'color_designation': 'BF9000'})
+    db.role_list.bulk_insert(role_list)
+    
+if not db.member_properties_skel:
+    prop_list = []
+    prop_list.append({'property_name': 'm_last_login',
+                      'property_desc': 'Last Login',
+                      'member_editable': '0',
+                      'sort_order': '0'})
+    prop_list.append({'property_name': 'm_display_name',
+                      'property_desc': 'Display name to use for questions, '
+                      'answers, etc, if blank, will default to auth',
+                      'member_editable': '0',
+                      'sort_order': '0'})
+    prop_list.append({'property_name': 'm_last_login_ip',
+                      'property_desc': 'Last Login IP',
+                      'member_editable': '0',
+                      'sort_order': '0'})
+    prop_list.append({'property_name': 'm_questions',
+                      'property_desc': 'Number of questions posted',
+                      'member_editable': '0',
+                      'sort_order': '0'})
+    prop_list.append({'property_name': 'm_answers',
+                      'property_desc': 'Number of answers posted',
+                      'member_editable': '0',
+                      'sort_order': '0'})
+    prop_list.append({'property_name': 'm_comments',
+                      'property_desc': 'Number of comments posted',
+                      'member_editable': '0',
+                      'sort_order': '0'})
+    prop_list.append({'property_name': 'm_locale',
+                      'property_desc': 'Default display language',
+                      'member_editable': '1',
+                      'sort_order': '0'})
+    prop_list.append({'property_name': 'm_web_page',
+                      'property_desc': 'Member URI/URL',
+                      'member_editable': '1',
+                      'sort_order': '0'})
+    prop_list.append({'property_name': 'm_country',
+                      'property_desc': 'Member City/Country',
+                      'member_editable': '1',
+                      'sort_order': '0'})
+    prop_list.append({'property_name': 'm_join_date',
+                      'property_desc': 'Join date',
+                      'member_editable': '0',
+                      'sort_order': '0'})
+    prop_list.append({'property_name': 'm_real_name',
+                      'property_desc': 'Member full name',
+                      'member_editable': '1',
+                      'sort_order': '0'})
+    prop_list.append({'property_name': 'm_email',
+                      'property_desc': 'Member secondary email address',
+                      'member_editable': '1',
+                      'sort_order': '0'})
+    prop_list.append({'property_name': 'm_points_up',
+                      'property_desc': 'Number of points awarded',
+                      'member_editable': '0',
+                      'sort_order': '0'})
+    prop_list.append({'property_name': 'm_points_dn',
+                      'property_desc': 'Number of negative points awarded',
+                      'member_editable': '0',
+                      'sort_order': '0'})
+    db.member_properties_skel.bulk_insert(prop_list)
+
+if not db.auth_users.id.count():
+    sys_admin_role_id = db(db.auth_roles.role_name=='SysAdmin').select(
+        db.auth_roles.id)[0].id
+    auth_alias = 'admin@qa-stack.com'
+    # Create a temporary password, store it in our session and
+    # notify the user that it NEEDS!! to be changed within the
+    # session...
+    auth_passwd = stackhelper.gen_pwd()
+    user_temp_passwd = hash_pwd = hashlib.sha1(
+        '%s%s' % (auth_alias, auth_passwd)).hexdigest()
+    # Create our first user in the system and WARN the user
+    # to change the password after FIRST log in...
+    db.auth_users.insert(auth_alias=auth_alias,
+                         auth_passwd=user_temp_passwd,
+                         auth_role_id=sys_admin_role_id)
+    
+    # Stuff this info into the session, a bit of magic here since web2py
+    # "provides" us with a session object in our environment
+    session.RUN_ONCE = 1
+    session.NEW_USER = auth_alias
+    session.NEW_USER_PASSWD = auth_passwd

@@ -60,10 +60,11 @@
 
         <br />&nbsp;<br />
 
-        <div class="paragraph">{{=XML(T('For any questions, you may'))}}
+        <div class="paragraph">{{=XML(T('If you forgot your LOCAL password, or for any other questions, please'))}}
         <a href="{{=URL(r=request, c='default', f='contact_admin')}}"
-        title="{{=XML(T('Contact the Administrator directly'))}}">{{=XML(T('Contact the Administrator directly'))}}</a>.</div>
+        title="{{=XML(T('Contact the Administrator directly'))}}">{{=XML(T('contact the administrator directly'))}}</a>.</div>
 
+        <!--
         <div class="paragraph">{{=XML(T('If you forgot your LOCAL password please'))}}
         <a href="javascript:void(0);" title=""
         onclick="document.getElementById('forgot_pwd').style.display='block';return false;">{{=XML(T('Click Here'))}}</a>.</div>
@@ -73,6 +74,7 @@
             <input type="text" id="req_email" name="req_email" value="" class="formelem" style="width:200px;" />
             <input type="submit" id="request_pwd" name="request_pwd" value="{{=XML(T('Request Password'))}}" />
         </div>
+        //-->
 
     </fieldset>
 </form>
@@ -82,6 +84,9 @@
     document.getElementById("auth_alias").focus();
     //-->
 </script>
+
+<p>If you wish to sign in using any of the providers below, you may do so without
+having to enter your password in this website.</p>
 
 <!-- Make sure your token_url corresponds to a valid hostname defined in your janrain settings //-->
 <iframe src="http://qa-stack.rpxnow.com/openid/embed?token_url={{=request.env.wsgi_url_scheme}}://{{=request.env.http_host}}{{=URL(r=request, c='members', f='login_janrain')}}"

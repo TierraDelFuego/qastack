@@ -13,6 +13,6 @@
 <p><b>Subject</b>: {{=message.subject}}<br />
 <p><b>Date</b>: {{=message.creation_date}}</p>
 
-<p><b>Content</b>: {{=XML(message.message)}}</p>
+<p><b>Content</b>: {{=XML(parse_content(message.message))}}</p>
 
 <a href="javascript:void(0);" onclick="window.close();">Close Window</a>
