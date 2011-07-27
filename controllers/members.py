@@ -770,11 +770,18 @@ def vote():
             err = 6
     if err:
         anchor = 'error'
-    redirect(URL(r=request,
-                 c='default',
-                 f='view',
-                 args=[qid],
-                 vars=dict(err=err, anchor=anchor)))
+        
+    if request.vars.get('from_ajax'):
+        if err:
+            return "Error %s" % (err)
+        else:
+            return "Votes Updated"
+    else:
+        redirect(URL(r=request,
+                     c='default',
+                     f='view',
+                     args=[qid],
+                     vars=dict(err=err, anchor=anchor)))
 
 @auth_user.requires_login()
 def subscribe():

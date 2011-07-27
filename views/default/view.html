@@ -10,6 +10,34 @@ answerXYZ - Each Answer with ID XYZ
 commentXYX - A specific anchor on a comment ID (comments are unique among questions and answers)
 //-->
 
+<script type="text/javascript">
+<!--
+    function AjaxSubmit(url, msg_elem, qac_type, qa_elem, add_val) {
+        /*
+         url is the URL to process
+         msg_elem is the elem id that will show the response from the call
+         qac_type is 'q', 'a' or 'c' (question, answer, comment)
+         qa_elem is the elem_id that will increment or decrement
+         add_val will be +1 or -1 depending if it is upvote or dnvote
+        */
+        var request = new XMLHttpRequest();
+        request.open("GET", url);
+        request.onreadystatechange = function() {
+            if (request.readyState == 4 && request.status == 200) {
+                document.getElementById(msg_elem).innerHTML = "<div class=\"info-pretty\">" + request.responseText + "</div>";
+                var cur_val_o = document.getElementById(qa_elem);
+                if (qac_type == 'q' || qac_type == 'a') {
+                    var cur_val = parseInt(cur_val_o.innerText);
+                    cur_val_o.innerText = cur_val + add_val;
+                }
+            }
+        }
+        //alert(request.readyState + "|" + request.status);
+        request.send();
+    }
+//-->
+</script>
+
 {{if not question.questions.is_visible:}}
     <div class="error2">This Question is marked as HIDDEN - For Administration use Only</div>
 {{pass}}
@@ -108,11 +136,13 @@ commentXYX - A specific anchor on a comment ID (comments are unique among questi
             <tr>
                 <td style="text-align:center;vertical-align:top;width:100px;">
                     {{if stackhelper.user_can_vote():}}
-                        <a href="{{=URL(r=request, c='members', f='vote', args=['question', question.questions.id, 'up', question.questions.id])}}" class="nolink"
+                        <a href="javascript:void(0);"
+                        class="nolink"
+                        onclick="AjaxSubmit('{{=URL(r=request, c='members', f='vote', args=['question', question.questions.id, 'up', question.questions.id], vars=dict(from_ajax=1))}}', 'q_votes_msg', 'q', 'q_votes_display', 1);return false;"
                         title="{{=XML(T('Vote Up'))}}"><img src="{{=URL(r=request, c='static/images/medium', f='checkmark.png')}}"
                         alt="{{=XML(T('Vote Up'))}}"
                         title="{{=XML(T('Vote Up'))}}" /></a><br />
-                        <span class="votes-display">{{=question.questions.votes_up - question.questions.votes_dn}}</span><br />
+                        <span class="votes-display" id="q_votes_display">{{=question.questions.votes_up - question.questions.votes_dn}}</span><br />
                         <a href="{{=URL(r=request, c='members', f='vote', args=['question', question.questions.id, 'down', question.questions.id])}}" class="nolink"
                         title="{{=XML(T('Vote Down'))}}"><img src="{{=URL(r=request, c='static/images/medium', f='x.png')}}"
                         alt="{{=XML(T('Vote Down'))}}"
@@ -129,18 +159,20 @@ commentXYX - A specific anchor on a comment ID (comments are unique among questi
                 </td>
                 <td style="vertical-align:top;">
                     <div class="lsep">
+                        <span id="q_votes_msg"></span>
                         <div class="explain">
-                        {{if stackhelper.has_member_avatar(question.questions.created_by):}}
-                            <img src="{{=URL(r=request, c='members', f='get_avatar_image', args=[question.questions.created_by])}}"
-                                 alt=""
-                                 style="vertical-align:top;" />
-                        {{pass}}
-                        {{=XML(T('By'))}}: {{=question.member_properties.property_value}}
-                        ({{=stackhelper.get_user_role(question.questions.created_by)}}),
-                        {{=XML(T('Created'))}}
-                        {{=prettydate(question.questions.created_on, T)}},
-                        {{=XML(T('Updated'))}}
-                        {{=prettydate(question.questions.modified_on, T)}}.</div>
+                            {{if stackhelper.has_member_avatar(question.questions.created_by):}}
+                                <img src="{{=URL(r=request, c='members', f='get_avatar_image', args=[question.questions.created_by])}}"
+                                     alt=""
+                                     style="vertical-align:top;" />
+                            {{pass}}
+                            {{=XML(T('By'))}}: {{=question.member_properties.property_value}}
+                            ({{=stackhelper.get_user_role(question.questions.created_by)}}),
+                            {{=XML(T('Created'))}}
+                            {{=prettydate(question.questions.created_on, T)}},
+                            {{=XML(T('Updated'))}}
+                            {{=prettydate(question.questions.modified_on, T)}}.
+                        </div>
                         <div class="paragraph-all">
                             {{=XML(parse_content(question.questions.description))}}
                         </div>
