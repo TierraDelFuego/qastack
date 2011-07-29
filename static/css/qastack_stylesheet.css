@@ -585,3 +585,18 @@ tr.shadedarker {
     margin-top: -1em;
     margin-bottom: -1em;
 }
+
+.quick-alert {
+    margin:1em 0;
+    padding: .5em;
+    background-color: teal;
+    border: 1px solid #a00;
+    color: yellow;
+    font-weight: bold;
+    display: none;
+    position:fixed;
+    top:5px;
+    right:20px;
+    z-index:10000;
+    text-align:center;
+Ê}

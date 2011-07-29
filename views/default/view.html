@@ -10,13 +10,13 @@ answerXYZ - Each Answer with ID XYZ
 commentXYX - A specific anchor on a comment ID (comments are unique among questions and answers)
 //-->
 
+<script type="text/javascript" src="{{=URL(r=request,c='static/js',f='jquery.js')}}"></script>
+
 <script type="text/javascript">
 <!--
-    function AjaxSubmit(url, msg_elem, qac_type, qa_elem, add_val) {
+    function ajaxSubmit(url, qa_elem, add_val) {
         /*
          url is the URL to process
-         msg_elem is the elem id that will show the response from the call
-         qac_type is 'q', 'a' or 'c' (question, answer, comment)
          qa_elem is the elem_id that will increment or decrement
          add_val will be +1 or -1 depending if it is upvote or dnvote
         */
@@ -24,19 +24,32 @@ commentXYX - A specific anchor on a comment ID (comments are unique among questi
         request.open("GET", url);
         request.onreadystatechange = function() {
             if (request.readyState == 4 && request.status == 200) {
-                document.getElementById(msg_elem).innerHTML = "<div class=\"info-pretty\">" + request.responseText + "</div>";
+                document.getElementById('dyn_msg').innerText = request.responseText;
                 var cur_val_o = document.getElementById(qa_elem);
-                if (qac_type == 'q' || qac_type == 'a') {
-                    var cur_val = parseInt(cur_val_o.innerText);
-                    cur_val_o.innerText = cur_val + add_val;
-                }
+                var cur_val = parseInt(cur_val_o.innerText);
+                cur_val_o.innerText = cur_val + add_val;
+                reportMsg();
             }
         }
         //alert(request.readyState + "|" + request.status);
         request.send();
     }
+    
+    function reportMsg() {
+        var d = $('#dyn_msg');
+        var position = d.position();
+        $(document).ready(function() {
+            $('#dyn_msg')
+            .insertAfter( $(this) )
+            .fadeIn('slow')
+            .animate({opacity: 1.0}, 1000)
+            .fadeOut('slow');
+        });
+    }
 //-->
 </script>
+
+<div id="dyn_msg" class="quick-alert"></div>
 
 {{if not question.questions.is_visible:}}
     <div class="error2">This Question is marked as HIDDEN - For Administration use Only</div>
@@ -138,12 +151,14 @@ commentXYX - A specific anchor on a comment ID (comments are unique among questi
                     {{if stackhelper.user_can_vote():}}
                         <a href="javascript:void(0);"
                         class="nolink"
-                        onclick="AjaxSubmit('{{=URL(r=request, c='members', f='vote', args=['question', question.questions.id, 'up', question.questions.id], vars=dict(from_ajax=1))}}', 'q_votes_msg', 'q', 'q_votes_display', 1);return false;"
+                        onclick="ajaxSubmit('{{=URL(r=request, c='members', f='vote', args=['question', question.questions.id, 'up', question.questions.id], vars=dict(from_ajax=1))}}', 'q_votes_display', 1);return false;"
                         title="{{=XML(T('Vote Up'))}}"><img src="{{=URL(r=request, c='static/images/medium', f='checkmark.png')}}"
                         alt="{{=XML(T('Vote Up'))}}"
                         title="{{=XML(T('Vote Up'))}}" /></a><br />
                         <span class="votes-display" id="q_votes_display">{{=question.questions.votes_up - question.questions.votes_dn}}</span><br />
-                        <a href="{{=URL(r=request, c='members', f='vote', args=['question', question.questions.id, 'down', question.questions.id])}}" class="nolink"
+                        <a href="javascript:void(0);"
+                        onclick="ajaxSubmit('{{=URL(r=request, c='members', f='vote', args=['question', question.questions.id, 'down', question.questions.id], vars=dict(from_ajax=1))}}', 'q_votes_display', -1);return false;"
+                        class="nolink"
                         title="{{=XML(T('Vote Down'))}}"><img src="{{=URL(r=request, c='static/images/medium', f='x.png')}}"
                         alt="{{=XML(T('Vote Down'))}}"
                         title="{{=XML(T('Vote Down'))}}" /></a>
@@ -159,7 +174,6 @@ commentXYX - A specific anchor on a comment ID (comments are unique among questi
                 </td>
                 <td style="vertical-align:top;">
                     <div class="lsep">
-                        <span id="q_votes_msg"></span>
                         <div class="explain">
                             {{if stackhelper.has_member_avatar(question.questions.created_by):}}
                                 <img src="{{=URL(r=request, c='members', f='get_avatar_image', args=[question.questions.created_by])}}"
@@ -221,12 +235,16 @@ commentXYX - A specific anchor on a comment ID (comments are unique among questi
                     <td>
                         <div style="font-weight:bold;">
                             {{if stackhelper.user_can_vote():}}
-                                <a href="{{=URL(r=request, c='members', f='vote', args=['comment', comment.comments.id, 'up', question.questions.id])}}" class="nolink"
+                                <a href="javascript:void(0);"
+                                class="nolink"
+                                onclick="ajaxSubmit('{{=URL(r=request, c='members', f='vote', args=['comment', comment.comments.id, 'up', question.questions.id], vars=dict(from_ajax=1))}}', 'c_votes_display_{{=comment.comments.id}}', 1);return false;"
                                 title="{{=XML(T('Vote Up'))}}"><img src="{{=URL(r=request, c='static/images/small', f='checkmark.png')}}"
                                 style="vertical-align:middle;"
                                 alt="{{=XML(T('Vote Up'))}}"
                                 title="{{=XML(T('Vote Up'))}}" /></a>
-                                <a href="{{=URL(r=request, c='members', f='vote', args=['comment', comment.comments.id, 'down', question.questions.id])}}" class="nolink"
+                                <a href="javascript:void(0);"
+                                class="nolink"
+                                onclick="ajaxSubmit('{{=URL(r=request, c='members', f='vote', args=['comment', comment.comments.id, 'down', question.questions.id], vars=dict(from_ajax=1))}}', 'c_votes_display_{{=comment.comments.id}}', -1);return false;"
                                 title="{{=XML(T('Vote Down'))}}"><img src="{{=URL(r=request, c='static/images/small', f='x.png')}}" style="vertical-align:middle;"
                                 alt="{{=XML(T('Vote Down'))}}"
                                 title="{{=XML(T('Vote Down'))}}" /></a>
@@ -242,7 +260,7 @@ commentXYX - A specific anchor on a comment ID (comments are unique among questi
                             ({{=stackhelper.get_user_role(comment.comments.modified_by)}})</a>,
                             {{=XML(T('Updated'))}}
                             {{=prettydate(comment.comments.modified_on, T)}},
-                            {{=XML(T('Votes'))}}: {{=comment.comments.votes_up - comment.comments.votes_dn}}
+                            {{=XML(T('Votes'))}}: <span id="c_votes_display_{{=comment.comments.id}}">{{=comment.comments.votes_up - comment.comments.votes_dn}}</span>
                             {{if auth_user.is_auth():}} |
                                 <a title=""
                                 href="{{=URL(r=request, c='members', f='flag_entry', args=[comment.comments.id, question.questions.id, 'comment'])}}"
@@ -269,12 +287,16 @@ commentXYX - A specific anchor on a comment ID (comments are unique among questi
                 <tr>
                     <td style="text-align:center;vertical-align:top;width:100px;{{if answer.answers.is_answer:}}border-top:2px solid #bababa;border-left:2px solid #bababa;border-bottom:2px solid #eaeaea;border-right:2px solid #eaeaea;background-color:#fafafa;{{pass}}">
                         {{if stackhelper.user_can_vote():}}
-                            <a href="{{=URL(r=request, c='members', f='vote', args=['answer', answer.answers.id, 'up', question.questions.id])}}" class="nolink"
+                            <a href="javascript:void(0);"
+                            class="nolink"
+                            onclick="ajaxSubmit('{{=URL(r=request, c='members', f='vote', args=['answer', answer.answers.id, 'up', question.questions.id], vars=dict(from_ajax=1))}}', 'answer_{{=answer.answers.id}}', 1);return false;"
                             title="{{=XML(T('Vote Up'))}}"><img src="{{=URL(r=request, c='static/images/medium', f='checkmark.png')}}"
                             alt="{{=XML(T('Vote Up'))}}"
                             title="{{=XML(T('Vote Up'))}}" /></a><br />
-                            <span class="votes-display">{{=answer.answers.votes_up - answer.answers.votes_dn}}</span><br />
-                            <a href="{{=URL(r=request, c='members', f='vote', args=['answer', answer.answers.id, 'down', question.questions.id])}}" class="nolink"
+                            <span class="votes-display" id="answer_{{=answer.answers.id}}">{{=answer.answers.votes_up - answer.answers.votes_dn}}</span><br />
+                            <a href="javascript:void(0);"
+                            class="nolink"
+                            onclick="ajaxSubmit('{{=URL(r=request, c='members', f='vote', args=['answer', answer.answers.id, 'down', question.questions.id], vars=dict(from_ajax=1))}}', 'answer_{{=answer.answers.id}}', -1);return false;"
                             title="{{=XML(T('Vote Down'))}}"><img src="{{=URL(r=request, c='static/images/medium', f='x.png')}}"
                             alt="{{=XML(T('Vote Down'))}}"
                             title="{{=XML(T('Vote Down'))}}" /></a>
@@ -348,11 +370,15 @@ commentXYX - A specific anchor on a comment ID (comments are unique among questi
                                         <td>
                                             <div style="font-weight:bold;">
                                                 {{if stackhelper.user_can_vote():}}
-                                                    <a href="{{=URL(r=request, c='members', f='vote', args=['comment', comment.comments.id, 'up', question.questions.id])}}" class="nolink"
+                                                    <a href="javascript:void(0);"
+                                                    class="nolink"
+                                                    onclick="ajaxSubmit('{{=URL(r=request, c='members', f='vote', args=['comment', comment.comments.id, 'up', question.questions.id], vars=dict(from_ajax=1))}}', 'c_votes_display_{{=comment.comments.id}}', 1);return false;"
                                                     title="{{=XML(T('Vote Up'))}}"><img src="{{=URL(r=request, c='static/images/small', f='checkmark.png')}}"
                                                     alt="{{=XML(T('Vote Up'))}}"
                                                     title="{{=XML(T('Vote Up'))}}" /></a>
-                                                    <a href="{{=URL(r=request, c='members', f='vote', args=['comment', comment.comments.id, 'down', question.questions.id])}}" class="nolink"
+                                                    <a href="javascript:void(0);"
+                                                    class="nolink"
+                                                    onclick="ajaxSubmit('{{=URL(r=request, c='members', f='vote', args=['comment', comment.comments.id, 'down', question.questions.id], vars=dict(from_ajax=1))}}', 'c_votes_display_{{=comment.comments.id}}', -1);return false;"
                                                     title="{{=XML(T('Vote Down'))}}"><img src="{{=URL(r=request, c='static/images/small', f='x.png')}}"
                                                     alt="{{=XML(T('Vote Down'))}}"
                                                     title="{{=XML(T('Vote Down'))}}" /></a>
@@ -366,7 +392,7 @@ commentXYX - A specific anchor on a comment ID (comments are unique among questi
                                                 <a name="comment{{=comment.comments.id}}">{{=XML(T('By'))}}: {{=comment.member_properties.property_value}}
                                                 ({{=stackhelper.get_user_role(comment.comments.modified_by)}})</a>,
                                                 {{=XML(T('Updated'))}}: {{=prettydate(comment.comments.modified_on, T)}},
-                                                {{=XML(T('Votes'))}}: {{=comment.comments.votes_up - comment.comments.votes_dn}}
+                                                {{=XML(T('Votes'))}}: <span id="c_votes_display_{{=comment.comments.id}}">{{=comment.comments.votes_up - comment.comments.votes_dn}}</span>
                                                 {{if auth_user.has_role('Manager,SysAdmin') or auth_user.get_user_id() == comment.comments.created_by:}}
                                                     | <a href="{{=URL(r=request, c='members', f='edit_comment', args=[comment.comments.id, question.questions.id])}}"
                                                     class="bold"

@@ -629,6 +629,11 @@ def vote():
     user_id = auth_user.get_user_id()
     qac_type, qac_id, up_dn, qid = request.args
     err = 0
+    # Set the variable below explicitly to False if you don't want sysadmins
+    # from multiple up/down voting or from up/down voting own posts, in fact,
+    # make this a system-wide property as soon as possible to add more
+    # flexibility to the system
+    is_sysadmin = auth_user.has_role('SysAdmin')
     if stackhelper.user_can_vote():
         assert up_dn in ('up', 'down',) # Totally
         c_type = 'Q' if qac_type == 'question' \
@@ -656,12 +661,11 @@ def vote():
 
         # Here we create a nifty little variable that will prevent the
         # user (any user) from awarding points to him/herself by
-        # up/down voting their oen posts...
+        # up/down voting their own posts...
         can_log_points = user_id != object_info.created_by
-        # If you do not want SysAdmins or Managers the ability
-        # of up/down voting their own posts, comment the line below
-        # can_log_posts = can_log_points or\
-        # auth_user.has_role('Manager,SysAdmin')
+        # If you want SysAdmins/Managers to allow then multiple voting up/dn
+        # and voting on own posts, uncomment the below line:
+        can_log_points = can_log_points or is_sysadmin
 
         if can_log_points:
 
@@ -685,7 +689,7 @@ def vote():
             # If you are a Manager+ there is no check, otherwise, see if you
             # have up/dn vote this before..
             score_log_insert = False
-            if auth_user.has_role('Manager,SysAdmin'):
+            if is_sysadmin:
                 score_log_insert = True
             else:
                 # Here is when things get a little iffy, in this scenario,
@@ -773,9 +777,11 @@ def vote():
         
     if request.vars.get('from_ajax'):
         if err:
-            return "Error %s" % (err)
+            # TODO Get a more meaningful reponse...
+            return "Error updating votes count: Code %s" % (err)
         else:
-            return "Votes Updated"
+            return "Votes Updated. Vote count is now %s." % (
+                votes_up - votes_dn)
     else:
         redirect(URL(r=request,
                      c='default',
