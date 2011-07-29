@@ -1,7 +1,14 @@
 syntax: glob
 *.pyc
 errors/*
-sessions/*
-cache/*
-databases/*
+sessions/?.*
+sessions/??.*
+sessions/???.*
+cache/cache.*
+errors/?.*
+errors/??.*
+errors/???.*
+databases/*.sqlite
+databases/*.log
+databases/*.table
 .DS_Store
