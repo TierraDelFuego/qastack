@@ -629,6 +629,8 @@ def vote():
                    1: 'You may not up vote the same entry twice.',
                    2: 'You may not vote up or down anymore on this entry.',
                    3: 'You may not down vote the same entry twice.',
+                   5: 'You do not have the required permissions to up/down '
+                   'vote entries.',
                    6: 'You may not up/down vote your own posts.'}
     anchor = 'questionMain'
     user_id = auth_user.get_user_id()
@@ -752,31 +754,37 @@ def vote():
                     db(db.comments.id==qac_id).update(votes_up=votes_up,
                                                       votes_dn=votes_dn)
 
-                    # In addition, update the auth_role_id of the user that will
-                    # receive the "points"
-                    # Note, to this version, only up/dn votes on questions and
-                    # answers are awarded points to matter for the user's prof.
-                    # Comments do not. (this coud change though)
-                    # Also here update the user's appropriate fields pertaining
-                    # points
-                    if c_type in ('Q', 'A',):
-                        # Will receive the points
-                        target_user_id = object_info.created_by
-                        if points >= 0:
-                            points_prop = 'm_points_up'
-                        else:
-                            points_prop = 'm_points_dn'
+                # In addition, update the auth_role_id of the user that will
+                # receive the "points"
+                # Note, to this version, only up/dn votes on questions and
+                # answers are awarded points to matter for the user's prof.
+                # Comments do not. (this coud change though)
+                # Also here update the user's appropriate fields pertaining
+                # points
+                if c_type in ('Q', 'A',):
+                    # Will receive the points
+                    target_user_id = object_info.created_by
+                    if points >= 0:
+                        points_prop = 'm_points_up'
+                    else:
+                        points_prop = 'm_points_dn'
 
-                        stackhelper.increment_member_property(points_prop,
-                                                              target_user_id,
-                                                              abs(points))
-                        stackhelper.update_user_rank(
-                            target_user_id,
-                            stackhelper.get_user_points(target_user_id))
+                    stackhelper.increment_member_property(points_prop,
+                                                          target_user_id,
+                                                          abs(points))
+                    stackhelper.update_user_rank(
+                        target_user_id,
+                        stackhelper.get_user_points(target_user_id))
         else:
             # "Your up/down voting operation yielded no points...
             # ...You may not up/down vote your own posts"
             err = 6
+    else:
+        # User Cannot Vote.. this most likely will never happen as
+        # the link is disabled on the UI for non-allowed voters..
+        # You do not have the required permissions to up/down vote entries.
+        err = 5
+        
     if err:
         anchor = 'error'
 

@@ -63,7 +63,7 @@
                        style="vertical-align:middle;height:20px;width:20px;" /><div>Leave empty for no change.</div></a>
                     </td>
                 </tr>
-                <tr>
+                <tr class="shadedark">
                     <td>{{=XML(T('Display Name'))}}:</td>
                     <td>
                         <input type="text" style="width:250px;" class="formelem" name="display_name" id="display_name"
@@ -101,7 +101,7 @@
                     <td>{{=XML(T('Questions'))}}:</td>
                     <td>{{=view_info['props']['questions']}}</td>
                 </tr>
-                <tr>
+                <tr class="shadedark">
                     <td>{{=XML(T('Answers'))}}:</td>
                     <td>{{=view_info['props']['answers']}}</td>
                 </tr>
@@ -111,7 +111,7 @@
                 </tr>
                 <tr class="shadedark">
                     <td>{{=XML(T('Reputation Points'))}}:</td>
-                    <td>{{=int(view_info['props']['points_up']) - int(view_info['props']['points_dn'])}} ({{=view_info['props']['points_up']}}/{{=view_info['props']['points_dn']}})</td>
+                    <td>{{=int(view_info['props']['points_up']) - int(view_info['props']['points_dn'])}} (+{{=view_info['props']['points_up']}} / -{{=view_info['props']['points_dn']}})</td>
                 </tr>
                 <tr class="shadedark">
                     <td>{{=XML(T('Question Subscriptions'))}}:</td>

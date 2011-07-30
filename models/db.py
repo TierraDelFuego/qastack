@@ -12,10 +12,10 @@ from gluon.tools import *
 from QAStackHelper import QAStackHelper
 
 # Control Migrations
-migrate = False
-fake_migrate = False # Read web2py docs for this
+migrate = False # False if DB Schema already exists (? - Read Docs Pls)
+fake_migrate = False # True to regen table info for EXISTING tables (run once)
 
-db = DAL('sqlite://qastack2.sqlite', migrate=migrate)
+db = DAL('sqlite://qastack.sqlite', migrate=migrate)
 #db = DAL('mysql://web2py:py2web@ds9.virtual:3306/qastack')
 
 # Import Authentication/Authorization
