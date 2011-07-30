@@ -577,7 +577,6 @@ class QAStackHelper(object):
         return html
 
 
-
     def __get_user_id(self, auth_user):
         return self.db(self.db.auth_users.auth_alias==auth_user).select(
             self.db.auth_users.id)[0].id
