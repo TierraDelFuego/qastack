@@ -422,7 +422,7 @@ def ask():
                         else:
                             # This tag does not exist, add it to our tags table
                             tag_id = db.tags.insert(tagname=tag, is_enabled=True)
-    
+
                         # Now assign this tag to the question
                         db.question_tags.insert(question_id=question_id,
                                                 tag_id=tag_id)
@@ -625,6 +625,11 @@ def vote():
     #
     # User can upvote or downvote only once, they may revoke a previous upvote
     # or downvote.  Managers (and above) are not restricted
+    error_codes = {0: '',
+                   1: 'You may not up vote the same entry twice.',
+                   2: 'You may not vote up or down anymore on this entry.',
+                   3: 'You may not down vote the same entry twice.',
+                   6: 'You may not up/down vote your own posts.'}
     anchor = 'questionMain'
     user_id = auth_user.get_user_id()
     qac_type, qac_id, up_dn, qid = request.args
@@ -774,20 +779,21 @@ def vote():
             err = 6
     if err:
         anchor = 'error'
-        
+
     if request.vars.get('from_ajax'):
-        if err:
-            # TODO Get a more meaningful reponse...
-            return "Error updating votes count: Code %s" % (err)
-        else:
-            return "Votes Updated. Vote count is now %s." % (
-                votes_up - votes_dn)
+        #if err:
+        return error_codes.get(err, "Unknown Error Code: %s" % (err))
+        #else:
+        #    return "Votes Updated. Vote count is now %s." % (
+        #        votes_up - votes_dn)
     else:
         redirect(URL(r=request,
                      c='default',
                      f='view',
                      args=[qid],
-                     vars=dict(err=err, anchor=anchor)))
+                     vars=dict(error_code=error_codes.get(
+                        err, "Unknown Error Code: %s" % (err)), err=err,
+                               anchor=anchor)))
 
 @auth_user.requires_login()
 def subscribe():
@@ -978,7 +984,7 @@ def logout():
         del session['lang']
     auth_user.logout()
     redirect(URL(r=request, c='default', f='index', vars=dict(lang='')))
-    
+
 def flag_entry():
     # Creates an administrator message crafted specifically to inform
     # them of a possible offensive comment or answer posted by a jackass
@@ -990,7 +996,7 @@ def flag_entry():
     user_id = auth_user.get_user_id()
     user_name = stackhelper.get_member_property('m_display_name',
                                                 user_id, '') or \
-              auth_user.get_user_name() 
+              auth_user.get_user_name()
     redirect_url = URL(r=request, c='default', f='view', args=[question_id])
     user_id_url = URL(r=request, c='admin', f='edit_user', args=[user_id])
     if entry_type == 'answer':
@@ -999,9 +1005,9 @@ def flag_entry():
         entry = db(db.comments.id==entry_id).select(db.comments.ALL)[0]
     message = """<a href="%s" title="">%s</a> has reported an inappropriate
     %s. The contents of the %s are:
-    
+
     %s
-    
+
     Question Location: <a href="%s" title="">%s</a>
     """ % (user_id_url,
            user_name,
@@ -1017,8 +1023,8 @@ def flag_entry():
         creation_date=request.now,
         read_flag=False)
     redirect(redirect_url)
-    
-    
+
+
 @auth_user.requires_login()
 def edit_question():
     """ Questions Can be edited:
@@ -1028,9 +1034,9 @@ def edit_question():
     - If the question has already be answered
     - Except by the SysAdmin
     Questions can be made "hidden" by the sysadmin only
-    
+
     """
-    
+
     req = request.vars
     view_info = {'errors': []}
     auth_user_id = auth_user.get_user_id()
@@ -1053,7 +1059,7 @@ def edit_question():
                 # This is a little tricky, since if a tag is removed, we
                 # also need to remove or decrease the tag count from
                 # out master tag table,
-                
+
                 # Grab the current tag ids that this question has (before
                 # any updates)
                 sql_tags = db((db.tags.is_enabled==True) &\
@@ -1061,7 +1067,7 @@ def edit_question():
                     (db.question_tags.tag_id==db.tags.id)).select(
                     db.tags.id)
                 current_tag_ids = [tag.id for tag in sql_tags]
-                
+
                 # wipe out all the tags for this question
                 db(db.question_tags.question_id==qid).delete()
                 new_tag_ids = []
@@ -1096,7 +1102,7 @@ def edit_question():
             # this includes the question itself, the question's comments,
             # every question's answers and every question's answers'
             # comments, all points up/down votes etc remain the same
-            
+
             # Hide the question
             db(db.questions.id==qid).update(is_visible=False)
             # The following will be temporarily disabled, as removing the
@@ -1151,7 +1157,7 @@ def edit_answer():
     Answers may not be edited (SysAdmin except):
     - If te answer is marked as "answered" by the question originator/SysAdmin
     Answers can be hidden only by the sysadmin
-    
+
     """
     req = request.vars
     view_info = {'errors': []}
@@ -1176,7 +1182,7 @@ def edit_answer():
             # Answer is set to be "hidden" from public view,
             # this includes the answer itself, the answer's comments if any.
             # if the answer is marked as "answered", remove the flag also
-            
+
             # Hide the answer and remove the answered flag
             db(db.answers.id==aid).update(
                 is_visible=False,
@@ -1186,7 +1192,7 @@ def edit_answer():
             # all of its comments will also be implicitly hidden as well.
             #db((db.comments.c_type=='A') &\
             #   (db.comments.qa_id==aid)).update(is_visible=False)
-            
+
             # Get the question ID to redirect later..
             qid = db(db.answers.id==aid).select(
                 db.answers.question_id)[0].question_id
@@ -1202,10 +1208,10 @@ def edit_answer():
               (db.question_tags.question_id==question.id)).select(
                   db.tags.tagname,
                   orderby=db.tags.tagname)
-    
+
     if redir:
         redirect(URL(r=request, c='default', f='view', args=[question.id]))
-    
+
     if auth_user.is_admin():
         can_edit = True
     else:
@@ -1214,7 +1220,7 @@ def edit_answer():
            answer.is_visible and not\
                answer.is_answer:
             can_edit = True
-            
+
     return dict(answer=answer,
                 question=question,
                 tags=tags,
@@ -1228,7 +1234,7 @@ def edit_comment():
     Comments can be edited by the above regardless if the question,
     answer or comment has been marked as approved, declined, etc,
     since comments do not provide anythint
-    
+
     """
     req = request.vars
     view_info = {'errors': []}
@@ -1252,20 +1258,20 @@ def edit_comment():
                                            "a valid content for your comment.")
         elif req.hide_c and auth_user.is_admin():
             # Comment is set to be "hidden" from public view,
-            
+
             # Hide the comment
             db(db.comments.id==cid).update(is_visible=False)
-            
+
             # Back to the view page
             redirect(URL(r=request, c='default', f='view', args=[qid]))
     else:
         cid, qid = request.args
-        
+
     if redir:
         redirect(URL(r=request, c='default', f='view', args=[qid]))
-    
+
     comment = db(db.comments.id==cid).select(db.comments.ALL)[0]
-    
+
     if auth_user.is_admin():
         can_edit = True
     else:
@@ -1273,7 +1279,7 @@ def edit_comment():
         if comment.created_by == auth_user_id and\
            comment.is_visible:
             can_edit = True
-            
+
     return dict(comment=comment,
                 view_info=view_info,
                 cid=cid,

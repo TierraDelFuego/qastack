@@ -27,7 +27,8 @@ def index():
         nav_css = 'aquestions'
         # Some needed system information (think about caching this and
         # update every 4 hours or so..)
-        num_recs = int(stackhelper.get_system_property('s_questions_per_page', 30))
+        num_recs = int(
+            stackhelper.get_system_property('s_questions_per_page', 30))
         mode = ''
         try:
             offset = int(req.start)
@@ -39,7 +40,7 @@ def index():
         except:
             pass
         sort_css = 's_dates' if req.sort is None else req.sort
-    
+
         # Constraints:
         # Sort (qsort):
         # Latest == order by questions.modified_on DESC
@@ -51,11 +52,11 @@ def index():
         # Unanswered = where questions.is_answered == 'F'
         qsort = req.sort # Latest, Most Voted (Sub Tabs)
         # qtype = req.qtype - Questions, Unanswered (Main Tabs)
-    
+
         sql_order = 'questions.modified_on DESC'
         if qsort == 's_votes': # "most voted"
             sql_order = 'questions.votes_up DESC'
-    
+
         qtype = ''
         if len(args) > 0:
             qtype_arg = args[0]
@@ -78,22 +79,22 @@ def index():
             sql_where.append("question_subscriptions.auth_user_id = "
                              "%s" % (auth_user.get_user_id() or 0))
             extra_tables.append('question_subscriptions')
-    
+
         # Tag Handling
         srch_tag = ''
         tag_table = ''
         if mode == 'tags':
-            srch_tag = req.get('tag', 'qa-stack') # /default/index/tags?tag=blah
+            srch_tag = req.get('tag', 'qa-stack') # /default/index/tags?tag=meh
             # get the "id" of this tag..
             sql_tags = db(
                 db.tags.tagname.like('%s%%' % (srch_tag))).select(db.tags.id)
             tags = ','.join([str(tag.id) for tag in sql_tags]) # '1,5,7,9,etc'
-    
+
             sql_where.append('question_tags.question_id = questions.id')
             sql_where.append('question_tags.tag_id in (%s)' %
                              (tags if tags else 0))
             extra_tables.append('question_tags')
-    
+
         sql_where_str = ''
         if sql_where:
             sql_where_str = "\nand %s" % (' and '.join(sql_where))
@@ -147,7 +148,8 @@ def index():
         order by
             %s
             limit %s offset %s
-        """ % (','.join(extra_tables), sql_where_str, sql_order, num_recs, offset)
+        """ % (','.join(extra_tables), sql_where_str, sql_order, num_recs,
+               offset)
         questions = []
         all_questions = db.executesql(sql)
         if all_questions:
@@ -179,7 +181,7 @@ def index():
             #raise ValueError, tags
             if tags:
                 q['tags'] = tags
-    
+
         return dict(view_info=view_info,
                     questions=questions,
                     nav_css=nav_css,
@@ -200,7 +202,7 @@ def view():
     qid = req.qid if req.qid is not None else request.args[0] # Question ID
 
     # Read the question here to see if the user is allowed to access it
-    question = db(db.questions.id==qid).select(db.questions.ALL)   
+    question = db(db.questions.id==qid).select(db.questions.ALL)
     user_id = auth_user.get_user_id()
     if not question or (
         not question[0].is_visible and not auth_user.is_admin()):
@@ -342,7 +344,8 @@ def tags():
 def search():
     srch_txt = request.vars.srch_txt
     if len(srch_txt.strip()):
-        url = URL(r=request, c='default', f='index', args=['tags'], vars=dict(tag=srch_txt))
+        url = URL(r=request, c='default', f='index', args=['tags'],
+                  vars=dict(tag=srch_txt))
     else:
         url = URL(r=request, c='default', f='index')
     redirect(url)
@@ -406,7 +409,8 @@ def contact_admin():
                     redirect(URL(r=request, c='default', f='index'))
                 else:
                     view_info['errors'].append(
-                        'Invalid humanity challenge response, please try again')
+                        'Invalid humanity challenge response, please try '
+                        'again')
                     return dict(request=request, view_info=view_info)
             else:
                 view_info['errors'].append(

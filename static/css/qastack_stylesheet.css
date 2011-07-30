@@ -587,6 +587,7 @@ tr.shadedarker {
 }
 
 .quick-alert {
+    font-size: larger;
     margin:1em 0;
     padding: .5em;
     background-color: teal;

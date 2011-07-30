@@ -15,4 +15,4 @@
 
 <p><b>Content</b>: {{=XML(parse_content(message.message))}}</p>
 
-<a href="javascript:void(0);" onclick="window.close();">Close Window</a>
+<a href="{{=URL(r=request, c='admin', f='index')}}" onclick="window.close();">Go Back</a>

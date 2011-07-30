@@ -1,7 +1,12 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import hashlib
+import hashlib, sys, os
+
+# Adds our "Modules" folder to our environment path
+path = os.path.join(request.folder, 'modules')
+if not path in sys.path:
+    sys.path.append(path)
 
 from gluon.tools import *
 from QAStackHelper import QAStackHelper
@@ -220,7 +225,7 @@ if not db.auth_roles.id.count():
                       'role_min_score': '10001',
                       'color_designation': 'BF9000'})
     db.role_list.bulk_insert(role_list)
-    
+
 if not db.member_properties_skel:
     prop_list = []
     prop_list.append({'property_name': 'm_last_login',
@@ -297,7 +302,7 @@ if not db.auth_users.id.count():
     db.auth_users.insert(auth_alias=auth_alias,
                          auth_passwd=user_temp_passwd,
                          auth_role_id=sys_admin_role_id)
-    
+
     # Stuff this info into the session, a bit of magic here since web2py
     # "provides" us with a session object in our environment
     session.RUN_ONCE = 1

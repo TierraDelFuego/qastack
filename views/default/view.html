@@ -25,16 +25,21 @@ commentXYX - A specific anchor on a comment ID (comments are unique among questi
         request.onreadystatechange = function() {
             if (request.readyState == 4 && request.status == 200) {
                 document.getElementById('dyn_msg').innerText = request.responseText;
-                var cur_val_o = document.getElementById(qa_elem);
-                var cur_val = parseInt(cur_val_o.innerText);
-                cur_val_o.innerText = cur_val + add_val;
+                // Only update the counts if we know for a fact that there
+                // were no errors reported.
+                if (request.responseText == '') {
+                    var cur_val_o = document.getElementById(qa_elem);
+                    var cur_val = parseInt(cur_val_o.innerText);
+                    cur_val_o.innerText = cur_val + add_val;
+                    document.getElementById('dyn_msg').innerText = "Vote count has been updated " + cur_val_o.innerText + " points.";
+                }
                 reportMsg();
             }
         }
         //alert(request.readyState + "|" + request.status);
         request.send();
     }
-    
+
     function reportMsg() {
         var d = $('#dyn_msg');
         var position = d.position();
@@ -67,21 +72,7 @@ commentXYX - A specific anchor on a comment ID (comments are unique among questi
 {{if request.vars.get('err', '0') != '0':}}
     <p class="err"><a name="error">{{=XML(T('An error or warning has been generated, please read below'))}}:</a></p>
     <p class="err">
-        {{if request.vars['err'] == '1':}}
-            {{=XML(T('You may not up vote the same element twice'))}}.
-        {{elif request.vars['err'] == '2':}}
-            {{=XML(T('You may not vote up or down anymore for this element'))}}.
-        {{elif request.vars['err'] == '3':}}
-            {{=XML(T('You may not down vote the same element twice'))}}.
-        {{elif request.vars['err'] == '4':}}
-            {{=XML(T('Your accepted answer has been changed, however, no points have been awarded since this answer had previously been marked as accepted'))}}.
-        {{elif request.vars['err'] == '5':}}
-            {{=XML(T('Your accepted answer has been changed, however, no points have been awarded since you cannot self-award points for your own answer'))}}.
-        {{elif request.vars['err'] == '6':}}
-            {{=XML(T('Your up/down voting operation yielded no points. You may not up/down vote your own posts'))}}.
-        {{else:}}
-            An Unknown Error has occured, code: {{=request.vars['err']}}
-        {{pass}}
+        {{=XML(T(request.vars.get('error_code')))}}.
     </p>
 {{pass}}
 
@@ -214,7 +205,7 @@ commentXYX - A specific anchor on a comment ID (comments are unique among questi
                             (being an admin, etc, or the logged in user is the
                             creator of this question, then he can edit this) //-->
                             | <a href="{{=URL(r=request, c='members', f='edit_question', args=[question.questions.id])}}" title="" class="bold"
-                            title="{{=XML(T('Edit Question'))}}">{{=XML(T('Edit Question'))}}</a> 
+                            title="{{=XML(T('Edit Question'))}}">{{=XML(T('Edit Question'))}}</a>
                         </div>
                     {{pass}}
                 </td>
@@ -507,9 +498,8 @@ commentXYX - A specific anchor on a comment ID (comments are unique among questi
     {{if request.vars.get('anchor', '') != '':}}
     window.location.hash = '{{=request.vars['anchor']}}';
     {{pass}}
-    
+
     // Highlight the "Questions" tab
     document.getElementById('aquestions').className = 'active';
 //-->
 </script>
-
