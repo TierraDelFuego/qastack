@@ -89,6 +89,7 @@ def signup():
             redirect(URL(r=request, c='default', f='index'))
     return dict(request=request, custom_messages=custom_messages)
 
+
 def login():
     """
     Login using Google's Credentials or custom qa-Stack.com Account
@@ -98,9 +99,9 @@ def login():
     custom_messages.update({'errors': []})
     isauth = False
     req = request.vars
-    if req.form_submitted: # Come from form submisssion
-        if req.login_b: # Login is what you want (not pwd retrieval, etc)
-            if req.google_account: # Google account is requested
+    if req.form_submitted:  # Come from form submisssion
+        if req.login_b:  # Login is what you want (not pwd retrieval, etc)
+            if req.google_account:  # Google account is requested
                 try:
                     usr, domain = req.auth_alias.split('@')
                 except IndexError:
@@ -155,13 +156,14 @@ def login():
 
 
 def login_janrain():
-    token = request.vars.token # Must be posted by the external calling process
+    # Must be posted by the external calling process
+    token = request.vars.token
 
     # Part of the Janrain API docs.
     api_params = {
     'token': token,
     'apiKey': 'a1357f66065bfa557d34c96d1116cbf50d8bf510',
-    'format': 'json',}
+    'format': 'json'}
 
     # make the api call
     http_response = urllib2.urlopen('https://rpxnow.com/api/v2/auth_info',
@@ -226,8 +228,8 @@ def preferences():
     user_email = username
     # Avatar Restrictions (px) - Maybe we need to make these dynamic??
     AVATAR_MAX_HEIGHT = 100
-    AVATAR_MAX_WIDTH  = 120
-    AVATAR_MAX_SIZE   = 15000 # Bytes
+    AVATAR_MAX_WIDTH = 120
+    AVATAR_MAX_SIZE = 15000  # Bytes
     view_info['props'].update(
         {'questions': stackhelper.get_member_property('m_questions',
                                                       user_id, '0')})
@@ -317,7 +319,7 @@ def preferences():
                 # http://epydoc.sourceforge.net/stdlib/ [cont'd next line]
                 # cgi.FieldStorage-class.html
                 image_data = req.avatar_data.file.read()
-                content_type = req.avatar_data.type # "image/png"
+                content_type = req.avatar_data.type  # "image/png"
                 doc_type, ext = content_type.split('/')
                 if doc_type == 'image':
                     c_type, width, height = \
@@ -374,6 +376,7 @@ def preferences():
                     user_id=user_id,
                     question_subscriptions=question_subscriptions)
 
+
 @auth_user.requires_login()
 def ask():
     view_info = {}
@@ -421,7 +424,8 @@ def ask():
                             tag_id = tag_r[0].id
                         else:
                             # This tag does not exist, add it to our tags table
-                            tag_id = db.tags.insert(tagname=tag, is_enabled=True)
+                            tag_id = db.tags.insert(tagname=tag,
+                                                    is_enabled=True)
 
                         # Now assign this tag to the question
                         db.question_tags.insert(question_id=question_id,
@@ -442,6 +446,7 @@ def ask():
             view_info['errors'].append('Question title, description and tags'
                                        ' are required.')
     return dict(view_info=view_info)
+
 
 @auth_user.requires_login()
 def comment_question():
@@ -518,6 +523,7 @@ def comment_question():
                 question=question,
                 tags=tags,
                 comments=q_comments)
+
 
 @auth_user.requires_login()
 def comment_answer():
@@ -614,6 +620,7 @@ def comment_answer():
                 a_comments=a_comments,
                 view_info=view_info)
 
+
 def vote():
     # Sample Args: ['question', '1', 'up', '1'], ['answer', '3', 'down', '2'],
     # etc - Values are:
@@ -642,28 +649,28 @@ def vote():
     # flexibility to the system
     is_sysadmin = auth_user.has_role('SysAdmin')
     if stackhelper.user_can_vote():
-        assert up_dn in ('up', 'down',) # Totally
+        assert up_dn in ('up', 'down',)  # Totally
         c_type = 'Q' if qac_type == 'question' \
                else 'A' if qac_type == 'answer' else 'C'
         # Get the vote count for this question/answer/comment
-        if c_type == 'Q': # Vote on a Question
+        if c_type == 'Q':  # Vote on a Question
             # In this particular case, qid=qac_id
             object_info = db(db.questions.id==qac_id).select(
                 db.questions.votes_up,
                 db.questions.votes_dn,
-                db.questions.created_by)[0] # Must Exist
+                db.questions.created_by)[0]  # Must Exist
             anchor = 'questionMain'
-        elif c_type == 'A': # Vote on an answer
+        elif c_type == 'A':  # Vote on an answer
             object_info = db(db.answers.id==qac_id).select(
                 db.answers.votes_up,
                 db.answers.votes_dn,
-                db.answers.created_by)[0] # Must Exist
+                db.answers.created_by)[0]  # Must Exist
             anchor = 'answer%s' % (qac_id)
-        else: # Vote on a comment
+        else:  # Vote on a comment
             object_info = db(db.comments.id==qac_id).select(
                 db.comments.votes_up,
                 db.comments.votes_dn,
-                db.comments.created_by)[0] # Must Exist
+                db.comments.created_by)[0]  # Must Exist
             anchor = 'comment%s' % (qac_id)
 
         # Here we create a nifty little variable that will prevent the
@@ -718,17 +725,21 @@ def vote():
                              (db.score_log.sender==user_id)).count()
                 if subtype == 'voteup':
                     if upvotes > dnvotes:
-                        err = 1 # You may not up vote the same question twice
+                        # You may not up vote the same question twice
+                        err = 1
                     elif upvotes == dnvotes and upvotes == 1:
-                        err = 2 # You may not vote up or down anymore 4 this Q
+                        # You may not vote up or down anymore 4 this Q
+                        err = 2
                     else:
                         # Allow Upvoting
                         score_log_insert = True
-                else: #'votedn'
+                else:  # 'votedn'
                     if dnvotes > upvotes:
-                        err = 3 # You may not down vote the same question twice
+                        # You may not down vote the same question twice
+                        err = 3
                     elif upvotes == dnvotes and upvotes == 1:
-                        err = 2 # You may not vote up or down anymore for this Q
+                        # You may not vote up or down anymore for this Q
+                        err = 2
                     else:
                         # Allow Downvote
                         score_log_insert = True
@@ -741,16 +752,16 @@ def vote():
                                     points=points,
                                     sender=user_id,
                                     created_on=request.now)
-                # In addition, update the votes up/down of either the questions,
-                # comments or answers tables
+                # In addition, update the votes up/down of either the
+                # questions, comments or answers tables
 
-                if c_type == 'Q': #  Question
+                if c_type == 'Q':  # Question
                     db(db.questions.id==qac_id).update(votes_up=votes_up,
                                                        votes_dn=votes_dn)
-                elif c_type == 'A': # Answer
+                elif c_type == 'A':  # Answer
                     db(db.answers.id==qac_id).update(votes_up=votes_up,
                                                      votes_dn=votes_dn)
-                else: # Default to Comments, make sure you assert that
+                else:  # Default to Comments, make sure you assert that
                     db(db.comments.id==qac_id).update(votes_up=votes_up,
                                                       votes_dn=votes_dn)
 
@@ -784,7 +795,7 @@ def vote():
         # the link is disabled on the UI for non-allowed voters..
         # You do not have the required permissions to up/down vote entries.
         err = 5
-        
+
     if err:
         anchor = 'error'
 
@@ -803,11 +814,13 @@ def vote():
                         err, "Unknown Error Code: %s" % (err)), err=err,
                                anchor=anchor)))
 
+
 @auth_user.requires_login()
 def subscribe():
     qid = request.args[0]
     stackhelper.add_question_subscription(qid, auth_user.get_user_id())
     redirect(URL(r=request, c='default', f='view', args=[qid]))
+
 
 @auth_user.requires_login()
 def toggle_answer():
@@ -870,6 +883,7 @@ def toggle_answer():
                  args=[question_id],
                  vars=dict(err=str(err))))
 
+
 @auth_user.requires_role('Reviewer,TeamLead.Manager,SysAdmin')
 def flag():
     # qac_type = 'question', 'answer', 'comment'
@@ -913,7 +927,7 @@ def flag():
                 stackhelper.increment_member_property('m_points_up',
                                                       question.created_by,
                                                       pts)
-            else: # offensive
+            else:  # offensive
                 # Flag this question "invisible" (equivalent of "Closed"??)
                 db(db.questions.id==qac_id).update(is_visible=False)
                 # Update this user's reputation
@@ -935,7 +949,7 @@ def flag():
                 stackhelper.increment_member_property('m_points_up',
                                                       answer.created_by,
                                                       pts)
-            else: # offensive
+            else:  # offensive
                 # "Hide" this answer
                 db(db.answers.id==qac_id).update(is_visible=False)
                 # Update this user's reputation
@@ -946,7 +960,7 @@ def flag():
             stackhelper.update_user_rank(
                 answer.created_by,
                 stackhelper.get_user_points(answer.created_by))
-        else: # Comment
+        else:  # Comment
             # Get this comment's creator
             comment = db(db.comments.id==qac_id).select(
                 db.comments.created_by)[0]
@@ -963,8 +977,8 @@ def flag():
                 stackhelper.get_user_points(comment.created_by))
         # Update our LOG table
         db.score_log.insert(
-            l_type=l_type, # Q, A, C
-            subtype=qac_flag, # offensive, featured, etc
+            l_type=l_type,  # Q, A, C
+            subtype=qac_flag,  # offensive, featured, etc
             qac_id=qac_id,
             points=pts,
             sender=user_id,
@@ -973,11 +987,13 @@ def flag():
     # Back to view.html
     redirect(URL(r=request, c='default', f='view', args=qid))
 
+
 @auth_user.requires_login()
 def unsubscribe():
     qid = request.args[0]
     stackhelper.del_question_subscription(qid, auth_user.get_user_id())
     redirect(URL(r=request, c='default', f='view', args=[qid]))
+
 
 def get_avatar_image():
     auth_user_id = request.args[0]
@@ -987,11 +1003,13 @@ def get_avatar_image():
     response.headers['Content-Type'] = '%s' % (avatar_info[0].content_type)
     return avatar_info[0].avatar_image
 
+
 def logout():
-    if session.has_key('lang'):
+    if 'lang' in session:  # session.has_key('lang') (pep8)
         del session['lang']
     auth_user.logout()
     redirect(URL(r=request, c='default', f='index', vars=dict(lang='')))
+
 
 def flag_entry():
     # Creates an administrator message crafted specifically to inform
@@ -1171,7 +1189,7 @@ def edit_answer():
     view_info = {'errors': []}
     auth_user_id = auth_user.get_user_id()
     can_edit = False
-    redir = False # Flag to trigger redirection back to View Question page
+    redir = False  # Flag to trigger redirection back to View Question page
     if req.form_submitted:
         aid = req.aid
         if req.update_answer:
@@ -1235,6 +1253,7 @@ def edit_answer():
                 view_info=view_info,
                 can_edit=can_edit)
 
+
 def edit_comment():
     """ Comments can be edited:
     - By the SysAdmin, regardless
@@ -1248,7 +1267,7 @@ def edit_comment():
     view_info = {'errors': []}
     auth_user_id = auth_user.get_user_id()
     can_edit = False
-    redir = False # Flag to trigger redirection back to View Question page
+    redir = False  # Flag to trigger redirection back to View Question page
     if req.form_submitted:
         cid = req.cid
         qid = req.qid

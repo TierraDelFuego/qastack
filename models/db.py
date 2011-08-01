@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import hashlib, sys, os
+import hashlib
+import sys
+import os
 
 # Adds our "Modules" folder to our environment path
 path = os.path.join(request.folder, 'modules')
@@ -9,11 +11,10 @@ if not path in sys.path:
     sys.path.append(path)
 
 from gluon.tools import *
-from QAStackHelper import QAStackHelper
 
 # Control Migrations
-migrate = False # False if DB Schema already exists (? - Read Docs Pls)
-fake_migrate = False # True to regen table info for EXISTING tables (run once)
+migrate = False  # False if DB Schema already exists (? - Read Docs Pls)
+fake_migrate = False  # True to regen table info for EXISTING tables (run once)
 
 db = DAL('sqlite://qastack.sqlite', migrate=migrate)
 #db = DAL('mysql://web2py:py2web@ds9.virtual:3306/qastack')
@@ -25,7 +26,7 @@ from QAStackHelper import QAStackHelper
 
 auth_user = CustomAuthentication(globals(), db)
 stackhelper = QAStackHelper(globals(), db, auth_user)
-service = Service(globals()) # for json, xml, jsonrpc, xmlrpc, amfrpc
+service = Service(globals())  # for json, xml, jsonrpc, xmlrpc, amfrpc
 
 ## Authentication Schema (2 tables)
 db.define_table('auth_roles',
@@ -109,8 +110,8 @@ db.define_table('answers',
 # Comments - Comments get up/dn points but do not count towards
 # the user's profile
 db.define_table('comments',
-    Field('c_type', 'text', required=True), # 'Q' or 'A'
-    Field('qa_id', 'integer', required=True), # ID of question or answer
+    Field('c_type', 'text', required=True),  # 'Q' or 'A'
+    Field('qa_id', 'integer', required=True),  # ID of question or answer
     Field('description', 'text', required=True),
     Field('votes_up', 'integer', required=True, default=0),
     Field('votes_dn', 'integer', required=True, default=0),
@@ -160,7 +161,8 @@ db.define_table('subscriptions_notification',
     Field('subscription_id', db.question_subscriptions),
     Field('created_on', 'datetime', required=True),
     Field('processed_on', 'datetime', required=False, default=None),
-    migrate='subscriptions_notification.table', fake_migrate=fake_migrate) # Important
+    # Important
+    migrate='subscriptions_notification.table', fake_migrate=fake_migrate)
 
 # "Queue" messages sent to the administrators (All admins can view )
 db.define_table('admin_messages',
@@ -198,7 +200,8 @@ if not db(db.system_properties.id > 0).count():
                         'if invalid it will default to English (US)',
                         'property_value': 'en'})
     system_list.append({'property_name': 's_info_html',
-                        'property_desc': 'Informational HTML: This can contain '
+                        'property_desc': 'Informational HTML: This can '
+                        'contain '
                         'html code and will be shown at the top most position '
                         'in the navigaton section',
                         'property_value': 'Welcome to QA-Stack!'})
@@ -288,7 +291,7 @@ if not db(db.member_properties_skel.id > 0).count():
     db.member_properties_skel.bulk_insert(prop_list)
 
 if not db(db.auth_users.id > 0).count():
-    sys_admin_role_id = db(db.auth_roles.role_name=='SysAdmin').select(
+    sys_admin_role_id = db(db.auth_roles.role_name == 'SysAdmin').select(
         db.auth_roles.id)[0].id
     auth_alias = 'admin@qa-stack.com'
     # Create a temporary password, store it in our session and
