@@ -91,10 +91,7 @@ def signup():
 
 
 def login():
-    """
-    Login using Google's Credentials or custom qa-Stack.com Account
-
-    """
+    """ Login using custom qa-Stack.com Account """
     custom_messages = {}
     custom_messages.update({'errors': []})
     isauth = False
