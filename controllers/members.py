@@ -203,7 +203,7 @@ def login_janrain():
             stackhelper.put_member_property('m_display_name', user_id, name)
     else:
         # TODO: Do something more elegant than this
-        #raise ValueError('An error occured: %s' % (auth_info['err']['msg']))
+        #raise valueError('An error occured: %s' % (auth_info['err']['msg']))
         form_vars = dict(login_error=auth_info['err']['msg'])
     redirect(URL(r=request, c='default', f='index', vars=form_vars))
 
@@ -224,9 +224,9 @@ def preferences():
                                user_role_info.color_designation})
     user_email = username
     # Avatar Restrictions (px) - Maybe we need to make these dynamic??
-    AVATAR_MAX_HEIGHT = 100
-    AVATAR_MAX_WIDTH = 120
-    AVATAR_MAX_SIZE = 15000  # Bytes
+    AVATAR_MAX_HEIGHT = 120
+    AVATAR_MAX_WIDTH = 100
+    AVATAR_MAX_SIZE = 111213  # Bytes
     view_info['props'].update(
         {'questions': stackhelper.get_member_property('m_questions',
                                                       user_id, '0')})
@@ -327,14 +327,18 @@ def preferences():
                             'Image dimensions exceed the '
                             'limits set by the '
                             'administrator: '
-                            '(H:%spx, W:%spx)' % (height, width))
+                            '(W:%spx, H:%spx)' % (width, height))
+                        view_info['errors'].append(
+                            'Limits are '
+                            '(W:%dpx, H:%dpx)' % (AVATAR_MAX_WIDTH, AVATAR_MAX_HEIGHT))
                         update_avatar = False
                     if len(image_data) > AVATAR_MAX_SIZE:
                         view_info['errors'].append(
                             'Avatar exceeds the maximum image size set by the '
                             'administrator: %s bytes' % (len(image_data)))
+                        view_info['errors'].append(
+                            'Limit is: (%d bytes)' % (AVATAR_MAX_SIZE))
                         update_avatar = False
-
                     if update_avatar:
                         if stackhelper.has_member_avatar(
                             user_id, bypass=False):
